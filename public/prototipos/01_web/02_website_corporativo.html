@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Consulting - Consultoria Estrategica</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #171717; background: #FAFAFA; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  .nav { background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; height: 64px; }
+  .nav-logo { font-size: 20px; font-weight: 700; color: #2563EB; }
+  .nav-logo span { color: #171717; }
+  .nav-links { display: flex; gap: 4px; list-style: none; }
+  .nav-links li { padding: 8px 16px; font-size: 14px; font-weight: 500; color: #525252; cursor: pointer; border-radius: 8px; transition: all .2s; }
+  .nav-links li:hover, .nav-links li.active { color: #2563EB; background: #eff6ff; }
+  .hamburger { display: none; background: none; border: none; cursor: pointer; font-size: 24px; }
+  .mobile-menu { display: none; }
+
+  /* PAGE CONTAINER */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* COMMON */
+  .section { padding: 80px 24px; }
+  .section-inner { max-width: 1120px; margin: 0 auto; }
+  .section-title { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+  .section-sub { font-size: 16px; color: #525252; margin-bottom: 48px; max-width: 600px; }
+  .section-center { text-align: center; }
+  .section-center .section-sub { margin-left: auto; margin-right: auto; }
+  .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+  .btn-primary { background: #2563EB; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+  .btn-outline { border: 2px solid #2563EB; color: #2563EB; background: transparent; }
+  .btn-outline:hover { background: #eff6ff; }
+
+  /* HOME - HERO */
+  .home-hero { background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=600&fit=crop&q=80') center/cover no-repeat; color: #fff; padding: 100px 24px 80px; position: relative; }
+  .home-hero::before { content: ''; position: absolute; inset: 0; background: rgba(30,58,95,.75); }
+  .home-hero-inner { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 1; }
+  .home-hero h1 { font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  .home-hero p { font-size: 17px; color: rgba(255,255,255,.8); line-height: 1.6; margin-bottom: 28px; }
+  .home-hero-visual { background: url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&h=450&fit=crop&q=80') center/cover no-repeat; border-radius: 16px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 48px 0; }
+  .stat-card { text-align: center; padding: 24px; }
+  .stat-num { font-size: 40px; font-weight: 800; color: #2563EB; }
+  .stat-label { font-size: 14px; color: #525252; margin-top: 4px; }
+
+  /* CARDS GRID */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); transition: transform .3s, box-shadow .3s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.1); }
+  .card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+  .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: #525252; line-height: 1.6; }
+
+  /* SERVICES 2x3 */
+  .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+  .service-card { background: #fff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb; transition: all .3s; cursor: pointer; }
+  .service-card:hover { border-color: #2563EB; box-shadow: 0 4px 20px rgba(37,99,235,.1); transform: translateY(-2px); }
+  .service-card .icon { font-size: 32px; margin-bottom: 16px; }
+  .service-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .service-card p { font-size: 14px; color: #525252; line-height: 1.6; margin-bottom: 16px; }
+  .service-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; background: #eff6ff; color: #2563EB; }
+
+  /* TEAM */
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+  .team-card { background: #fff; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .3s; }
+  .team-card:hover { transform: translateY(-3px); }
+  .team-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700; }
+  .team-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .team-card .role { font-size: 13px; color: #2563EB; font-weight: 500; margin-bottom: 8px; }
+  .team-card p { font-size: 13px; color: #525252; line-height: 1.5; }
+
+  /* BLOG */
+  .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .blog-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .3s; cursor: pointer; }
+  .blog-card:hover { transform: translateY(-3px); }
+  .blog-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+  .blog-content { padding: 20px; }
+  .blog-cat { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+  .blog-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+  .blog-card p { font-size: 13px; color: #525252; line-height: 1.5; margin-bottom: 12px; }
+  .blog-meta { font-size: 12px; color: #9ca3af; }
+
+  /* CONTACT FORM */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #525252; }
+  .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 14px; transition: border-color .2s; outline: none; background: #fff; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .form-group textarea { resize: vertical; min-height: 120px; }
+  .contact-info-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .contact-info-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+  .contact-info-item:last-child { border-bottom: none; }
+  .contact-info-icon { font-size: 20px; width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .contact-info-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .contact-info-item p { font-size: 13px; color: #525252; }
+
+  /* OFFICES */
+  .offices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+  .office-card { background: #f9fafb; border-radius: 8px; padding: 20px; text-align: center; }
+  .office-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .office-card p { font-size: 12px; color: #525252; }
+
+  /* FOOTER */
+  .footer { background: #171717; color: #fff; padding: 32px 24px; text-align: center; }
+  .footer p { font-size: 13px; color: rgba(255,255,255,.5); }
+  .footer .watermark { font-size: 11px; color: rgba(255,255,255,.25); margin-top: 8px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #16a34a; color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; transform: translateY(100px); opacity: 0; transition: all .4s; z-index: 200; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .nav-links.show { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: #fff; padding: 16px; border-bottom: 1px solid #e5e7eb; }
+    .hamburger { display: block; }
+    .home-hero-inner { grid-template-columns: 1fr; text-align: center; }
+    .home-hero h1 { font-size: 32px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo"><span>Meridian</span> Consulting</div>
+    <ul class="nav-links" id="navLinks">
+      <li class="active" onclick="showPage('home')">Inicio</li>
+      <li onclick="showPage('servicios')">Servicios</li>
+      <li onclick="showPage('equipo')">Equipo</li>
+      <li onclick="showPage('blog')">Blog</li>
+      <li onclick="showPage('contacto')">Contacto</li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('show')">☰</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <section class="home-hero">
+    <div class="home-hero-inner">
+      <div>
+        <h1>Transformamos negocios con estrategia y tecnologia</h1>
+        <p>Consultoria estrategica para empresas que buscan crecer de forma sostenible. Mas de 15 anos ayudando a lideres a tomar mejores decisiones.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-primary" style="background:#fff;color:#2563EB;" onclick="showPage('contacto')">Solicitar Consulta</button>
+          <button class="btn" style="border:2px solid rgba(255,255,255,.4);color:#fff;background:transparent;" onclick="showPage('servicios')">Ver Servicios</button>
+        </div>
+      </div>
+      <div class="home-hero-visual"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" data-target="350">0</div><div class="stat-label">Proyectos completados</div></div>
+        <div class="stat-card"><div class="stat-num" data-target="98">0</div><div class="stat-label">% Satisfaccion cliente</div></div>
+        <div class="stat-card"><div class="stat-num" data-target="45">0</div><div class="stat-label">Consultores expertos</div></div>
+        <div class="stat-card"><div class="stat-num" data-target="15">0</div><div class="stat-label">Anos de experiencia</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:#fff;">
+    <div class="section-inner section-center">
+      <div class="section-title">Servicios Destacados</div>
+      <div class="section-sub">Soluciones adaptadas a cada fase de crecimiento empresarial</div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon" style="background:#eff6ff;color:#2563EB;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+          <h3>Estrategia de Crecimiento</h3>
+          <p>Planes de expansion, analisis de mercado y estrategias de entrada para nuevos segmentos.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background:#fef3c7;color:#d97706;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3>Transformacion Digital</h3>
+          <p>Digitalizacion de procesos, implementacion tecnologica y cultura de innovacion.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background:#ecfdf5;color:#059669;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <h3>Optimizacion Operativa</h3>
+          <p>Eficiencia de procesos, reduccion de costes y mejora de la cadena de valor.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SERVICIOS -->
+<div class="page" id="page-servicios">
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-title">Nuestros Servicios</div>
+      <div class="section-sub">Expertise integral para cada desafio empresarial</div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+          <h3>Estrategia Corporativa</h3>
+          <p>Definicion de vision, mision y planes estrategicos a 3-5 anos. Analisis competitivo y posicionamiento de mercado.</p>
+          <span class="service-tag">Estrategia</span>
+        </div>
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></div>
+          <h3>Transformacion Digital</h3>
+          <p>Roadmaps de digitalizacion, seleccion e implementacion de tecnologia, gestion del cambio organizacional.</p>
+          <span class="service-tag">Tecnologia</span>
+        </div>
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h3>Capital Humano</h3>
+          <p>Programas de liderazgo, gestion del talento, cultura organizacional y planes de sucesion directiva.</p>
+          <span class="service-tag">Personas</span>
+        </div>
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h3>Finanzas y M&A</h3>
+          <p>Due diligence, valoracion de empresas, fusiones y adquisiciones, reestructuracion financiera.</p>
+          <span class="service-tag">Finanzas</span>
+        </div>
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+          <h3>Internacionalizacion</h3>
+          <p>Estudios de mercado internacional, estrategias de entrada, compliance regulatorio y partnerships locales.</p>
+          <span class="service-tag">Global</span>
+        </div>
+        <div class="service-card">
+          <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+          <h3>Innovacion y I+D</h3>
+          <p>Laboratorios de innovacion, design thinking, prototipado rapido y programas de intraemprendimiento.</p>
+          <span class="service-tag">Innovacion</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- EQUIPO -->
+<div class="page" id="page-equipo">
+  <section class="section">
+    <div class="section-inner section-center">
+      <div class="section-title">Nuestro Equipo</div>
+      <div class="section-sub">Profesionales con experiencia internacional en las principales firmas de consultoria</div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#2563EB,#7c3aed);">CR</div>
+          <h4>Carlos Ruiz</h4><div class="role">CEO & Fundador</div>
+          <p>Ex-McKinsey. 20 anos liderando transformaciones corporativas en Europa y Latam.</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">LM</div>
+          <h4>Laura Martinez</h4><div class="role">Directora Estrategia</div>
+          <p>MBA INSEAD. Especialista en estrategia de crecimiento y expansion internacional.</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">DS</div>
+          <h4>David Sanchez</h4><div class="role">Director Digital</div>
+          <p>Ex-Accenture. Lidera programas de transformacion digital en sectores regulados.</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">AG</div>
+          <h4>Ana Gonzalez</h4><div class="role">Directora Financiera</div>
+          <p>CFA. Experta en M&A y reestructuracion. Mas de 40 operaciones cerradas.</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#6366f1,#2563EB);">PM</div>
+          <h4>Pablo Moreno</h4><div class="role">Director RRHH</div>
+          <p>Psicologo organizacional. Programas de liderazgo para C-level en Fortune 500.</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#0ea5e9,#06b6d4);">SL</div>
+          <h4>Sofia Lopez</h4><div class="role">Directora Innovacion</div>
+          <p>PhD en Innovation Management. Creadora del programa "Innova Labs" de Meridian.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- BLOG -->
+<div class="page" id="page-blog">
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-title">Blog & Insights</div>
+      <div class="section-sub">Analisis, tendencias y perspectivas de nuestro equipo de expertos</div>
+      <div class="blog-grid">
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#eff6ff;color:#2563EB;">Estrategia</span><h4>5 tendencias que redefiniran la consultoria en 2026</h4><p>El sector de la consultoria esta en plena transformacion. IA generativa, sostenibilidad y nuevos modelos de trabajo...</p><span class="blog-meta">15 Feb 2026 · 8 min lectura</span></div></div>
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#ecfdf5;color:#059669;">Sostenibilidad</span><h4>ESG como palanca de crecimiento: guia practica</h4><p>Las empresas que integran criterios ESG en su estrategia no solo reducen riesgos, sino que acceden a nuevas oportunidades...</p><span class="blog-meta">12 Feb 2026 · 6 min lectura</span></div></div>
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#fef3c7;color:#d97706;">Tecnologia</span><h4>IA en la toma de decisiones directivas</h4><p>Como la inteligencia artificial esta cambiando la forma en que los CEOs toman decisiones estrategicas...</p><span class="blog-meta">8 Feb 2026 · 10 min lectura</span></div></div>
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#fce7f3;color:#db2777;">Personas</span><h4>Retention en la era del trabajo remoto</h4><p>El talento es el activo mas valioso. Estrategias probadas para retener a los mejores profesionales...</p><span class="blog-meta">3 Feb 2026 · 7 min lectura</span></div></div>
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#eef2ff;color:#4f46e5;">Finanzas</span><h4>M&A en Espana: oportunidades post-2025</h4><p>El mercado espanol presenta oportunidades unicas para fusiones y adquisiciones en sectores clave...</p><span class="blog-meta">28 Ene 2026 · 9 min lectura</span></div></div>
+        <div class="blog-card"><div class="blog-img" style="background:url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop&q=80') center/cover no-repeat;"></div><div class="blog-content"><span class="blog-cat" style="background:#e0f2fe;color:#0284c7;">Global</span><h4>Expandirse a LATAM: errores comunes y como evitarlos</h4><p>Lecciones aprendidas de 50+ proyectos de internacionalizacion en America Latina...</p><span class="blog-meta">22 Ene 2026 · 11 min lectura</span></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CONTACTO -->
+<div class="page" id="page-contacto">
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-title">Contacto</div>
+      <div class="section-sub">Cuentanos tu desafio y te proponemos una solucion a medida</div>
+      <div class="contact-grid">
+        <form onsubmit="event.preventDefault(); showToast('Mensaje enviado. Un consultor te contactara en 24h.');">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre" required></div>
+            <div class="form-group"><label>Empresa</label><input type="text" placeholder="Nombre de empresa"></div>
+          </div>
+          <div class="form-group"><label>Email</label><input type="email" placeholder="tu@empresa.com" required></div>
+          <div class="form-group"><label>Servicio de interes</label>
+            <select>
+              <option>Seleccionar servicio...</option>
+              <option>Estrategia Corporativa</option>
+              <option>Transformacion Digital</option>
+              <option>Capital Humano</option>
+              <option>Finanzas y M&A</option>
+              <option>Internacionalizacion</option>
+              <option>Innovacion y I+D</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Mensaje</label><textarea placeholder="Describe tu necesidad o desafio..."></textarea></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;">Enviar Consulta</button>
+        </form>
+        <div>
+          <div class="contact-info-card">
+            <div class="contact-info-item"><div class="contact-info-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div><div><h4>Oficina Principal</h4><p>Paseo de la Castellana, 91<br>28046 Madrid</p></div></div>
+            <div class="contact-info-item"><div class="contact-info-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div><h4>Telefono</h4><p>+34 910 456 789</p></div></div>
+            <div class="contact-info-item"><div class="contact-info-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div><div><h4>Email</h4><p>info@meridianconsulting.es</p></div></div>
+            <div class="contact-info-item"><div class="contact-info-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><h4>Horario</h4><p>Lunes a Viernes: 9:00 - 19:00</p></div></div>
+          </div>
+          <div class="offices-grid">
+            <div class="office-card"><h5>Madrid</h5><p>Sede central</p></div>
+            <div class="office-card"><h5>Barcelona</h5><p>Oficina Diagonal</p></div>
+            <div class="office-card"><h5>Lisboa</h5><p>Hub Iberico</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 Meridian Consulting. Todos los derechos reservados.</p>
+  <p class="watermark">Prototipo GT Dev Solutions</p>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+    const names = ['home','servicios','equipo','blog','contacto'];
+    const idx = names.indexOf(page);
+    document.querySelectorAll('.nav-links li')[idx].classList.add('active');
+    window.scrollTo(0, 0);
+    document.getElementById('navLinks').classList.remove('show');
+    if (page === 'home') animateCounters();
+  }
+
+  // COUNTER ANIMATION
+  function animateCounters() {
+    document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 40;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.round(current) + (el.dataset.target === '98' ? '%' : '+');
+      }, 30);
+    });
+  }
+  animateCounters();
+
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>

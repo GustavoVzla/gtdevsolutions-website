@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Chatbot - GT Dev Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B;min-height:100vh;display:flex;flex-direction:column}
+.header{height:56px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:16px}
+.header h1{font-size:16px;font-weight:600}
+.header h1 span{color:#2563EB}
+.wf-name{font-size:14px;color:#64748B;padding:6px 12px;background:#F1F5F9;border-radius:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#DCFCE7;color:#16A34A}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
+.btn-primary{background:#2563EB;color:#fff}
+.btn-outline{background:#fff;border:1px solid #E2E8F0;color:#475569}
+/* Stats bar */
+.stats-bar{display:flex;gap:24px;padding:14px 24px;background:#fff;border-bottom:1px solid #E2E8F0}
+.stat-item{display:flex;align-items:center;gap:10px}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.stat-info .label{font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px}
+.stat-info .value{font-size:16px;font-weight:700}
+/* Split view */
+.split-view{flex:1;display:flex;overflow:hidden}
+/* Canvas side */
+.canvas-side{flex:1;position:relative;overflow:auto;background:#F8FAFC;background-image:radial-gradient(#E2E8F0 1px,transparent 1px);background-size:20px 20px;min-height:400px}
+/* Chat side */
+.chat-side{width:380px;background:#fff;border-left:1px solid #E2E8F0;display:flex;flex-direction:column;flex-shrink:0}
+.chat-header{padding:14px 20px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:10px}
+.chat-header h3{font-size:14px;font-weight:600}
+.chat-header .online{width:8px;height:8px;background:#10B981;border-radius:50%}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:13px;line-height:1.5;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-user{background:#2563EB;color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg-bot{background:#F1F5F9;color:#1E293B;border-bottom-left-radius:4px;align-self:flex-start}
+.msg-bot .bot-label{font-size:10px;color:#64748B;margin-bottom:4px;font-weight:600}
+.msg-typing{align-self:flex-start;background:#F1F5F9;padding:12px 20px;border-radius:16px;display:none}
+.msg-typing.show{display:flex}
+.typing-dots{display:flex;gap:4px}
+.typing-dots span{width:6px;height:6px;background:#94A3B8;border-radius:50%;animation:typing 1.4s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.chat-input{padding:14px 20px;border-top:1px solid #E2E8F0;display:flex;gap:10px}
+.chat-input input{flex:1;padding:10px 14px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;outline:none}
+.chat-input input:focus{border-color:#2563EB}
+.send-btn{width:40px;height:40px;border-radius:10px;background:#2563EB;color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+/* Intent panel */
+.intent-panel{padding:14px 20px;border-top:1px solid #E2E8F0;background:#F8FAFC}
+.intent-title{font-size:11px;font-weight:600;color:#64748B;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.intent-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.intent-name{font-size:11px;width:80px;font-weight:500}
+.intent-fill-wrap{flex:1;height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden}
+.intent-fill{height:100%;border-radius:3px;transition:width .5s}
+.intent-pct{font-size:11px;font-weight:600;width:36px;text-align:right}
+/* Confidence meter */
+.confidence{display:flex;align-items:center;gap:8px;padding:8px 20px;border-top:1px solid #E2E8F0}
+.confidence-label{font-size:11px;color:#64748B;font-weight:500}
+.confidence-bar{flex:1;height:8px;background:#E2E8F0;border-radius:4px;overflow:hidden}
+.confidence-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#EF4444,#F59E0B,#10B981);width:92%;transition:width .5s}
+.confidence-val{font-size:13px;font-weight:700;color:#10B981}
+/* Nodes */
+.node{position:absolute;background:#fff;border-radius:14px;padding:14px 18px;border:2px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,.06);cursor:pointer;transition:all .3s;min-width:150px;text-align:center;z-index:2}
+.node:hover{box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateY(-2px)}
+.node.selected{border-color:#2563EB;box-shadow:0 0 0 4px rgba(37,99,235,.15)}
+.node-icon{font-size:24px;margin-bottom:4px}
+.node-label{font-size:11px;font-weight:600;margin-bottom:1px}
+.node-desc{font-size:9px;color:#94A3B8}
+.node-type{position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:2px 8px;border-radius:8px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.type-trigger{background:#DCFCE7;color:#16A34A}
+.type-ai{background:#DBEAFE;color:#2563EB}
+.type-router{background:#FEF3C7;color:#D97706}
+.type-action{background:#F3E8FF;color:#7C3AED}
+.type-response{background:#FCE7F3;color:#DB2777}
+/* AI glow */
+.node.ai-glow{border-color:#2563EB;box-shadow:0 0 30px rgba(37,99,235,.25);animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 20px rgba(37,99,235,.2)}50%{box-shadow:0 0 35px rgba(37,99,235,.4)}}
+/* Flow dots */
+@keyframes flowAnim{0%{offset-distance:0%}100%{offset-distance:100%}}
+.flow-dot{position:absolute;width:7px;height:7px;border-radius:50%;z-index:3}
+.fd1{background:#2563EB;box-shadow:0 0 6px rgba(37,99,235,.6);offset-path:path('M 260 130 C 320 130, 350 130, 400 130');animation:flowAnim 1.6s linear infinite}
+.fd2{background:#F59E0B;box-shadow:0 0 6px rgba(245,158,11,.6);offset-path:path('M 560 130 C 620 130, 650 130, 700 130');animation:flowAnim 1.6s linear infinite .4s}
+.fd3a{background:#10B981;box-shadow:0 0 6px rgba(16,185,129,.6);offset-path:path('M 850 90 C 900 70, 930 60, 970 60');animation:flowAnim 1.6s linear infinite .8s}
+.fd3b{background:#7C3AED;box-shadow:0 0 6px rgba(124,58,237,.6);offset-path:path('M 850 130 C 900 130, 930 130, 970 130');animation:flowAnim 1.6s linear infinite .8s}
+.fd3c{background:#EF4444;box-shadow:0 0 6px rgba(239,68,68,.6);offset-path:path('M 850 170 C 900 190, 930 200, 970 200');animation:flowAnim 1.6s linear infinite .8s}
+.fd4{background:#DB2777;box-shadow:0 0 6px rgba(219,39,119,.6);offset-path:path('M 1100 130 C 1140 130, 1160 130, 1200 130');animation:flowAnim 1.6s linear infinite 1.2s}
+/* Branch labels */
+.blabel{position:absolute;z-index:4;font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px}
+/* Watermark */
+.watermark{text-align:center;padding:10px;font-size:11px;color:#94A3B8;background:#fff;border-top:1px solid #E2E8F0;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>n8n <span>AI Agent</span></h1>
+    <div class="wf-name">Asistente IA - Atencion al Cliente</div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div style="width:8px;height:8px;background:#16A34A;border-radius:50%"></div> Activo 24/7</div>
+    <button class="btn btn-outline">Entrenar</button>
+    <button class="btn btn-primary">▶ En Vivo</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-icon" style="background:#DBEAFE;color:#2563EB"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></div><div class="stat-info"><div class="label">Conversaciones/Dia</div><div class="value">89</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#DCFCE7;color:#16A34A"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div><div class="stat-info"><div class="label">Resolucion Auto</div><div class="value">78%</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#FEF3C7;color:#D97706"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="stat-info"><div class="label">Satisfaccion</div><div class="value">4.7/5</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#F3E8FF;color:#7C3AED"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-info"><div class="label">Resp. Promedio</div><div class="value">1.2s</div></div></div>
+</div>
+
+<div class="split-view">
+  <!-- CANVAS -->
+  <div class="canvas-side">
+    <svg style="position:absolute;top:0;left:0;width:1400px;height:300px;z-index:1;pointer-events:none">
+      <!-- Trigger → AI Analyze -->
+      <path d="M 260 130 L 400 130" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="6 4"/>
+      <polygon points="398,125 408,130 398,135" fill="#CBD5E1"/>
+      <!-- AI → Router -->
+      <path d="M 560 130 L 700 130" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="6 4"/>
+      <polygon points="698,125 708,130 698,135" fill="#CBD5E1"/>
+      <!-- Router → 3 branches -->
+      <path d="M 850 105 Q 900 60, 970 60" fill="none" stroke="#10B981" stroke-width="2"/>
+      <polygon points="968,55 978,60 968,65" fill="#10B981"/>
+      <path d="M 855 130 L 970 130" fill="none" stroke="#7C3AED" stroke-width="2"/>
+      <polygon points="968,125 978,130 968,135" fill="#7C3AED"/>
+      <path d="M 850 155 Q 900 200, 970 200" fill="none" stroke="#EF4444" stroke-width="2"/>
+      <polygon points="968,195 978,200 968,205" fill="#EF4444"/>
+      <!-- All branches → Response -->
+      <path d="M 1100 60 Q 1150 60, 1200 100" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <path d="M 1100 130 L 1200 130" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <path d="M 1100 200 Q 1150 200, 1200 160" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <polygon points="1198,125 1208,130 1198,135" fill="#94A3B8"/>
+    </svg>
+
+    <!-- Branch labels -->
+    <div class="blabel" style="left:890px;top:42px;background:#DCFCE7;color:#16A34A">Consulta</div>
+    <div class="blabel" style="left:890px;top:118px;background:#F3E8FF;color:#7C3AED">Queja</div>
+    <div class="blabel" style="left:890px;top:195px;background:#FEE2E2;color:#DC2626">Pedido</div>
+
+    <!-- Animated dots -->
+    <div class="flow-dot fd1"></div>
+    <div class="flow-dot fd2"></div>
+    <div class="flow-dot fd3a"></div>
+    <div class="flow-dot fd3b"></div>
+    <div class="flow-dot fd3c"></div>
+    <div class="flow-dot fd4"></div>
+
+    <!-- Nodes -->
+    <div class="node" style="left:110px;top:95px">
+      <div class="node-type type-trigger">Trigger</div>
+      <div class="node-icon" style="color:#16A34A"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></div>
+      <div class="node-label">Mensaje Recibido</div>
+      <div class="node-desc">WhatsApp / Web Chat</div>
+    </div>
+
+    <div class="node ai-glow" style="left:410px;top:90px">
+      <div class="node-type type-ai">IA</div>
+      <div class="node-icon" style="color:#2563EB"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg></div>
+      <div class="node-label">Analizar Intencion</div>
+      <div class="node-desc">Claude 3.5 Sonnet</div>
+    </div>
+
+    <div class="node" style="left:710px;top:92px">
+      <div class="node-type type-router">Router</div>
+      <div class="node-icon" style="color:#D97706"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg></div>
+      <div class="node-label">Clasificar Tipo</div>
+      <div class="node-desc">3 rutas</div>
+    </div>
+
+    <!-- Branch nodes -->
+    <div class="node" style="left:980px;top:30px;min-width:120px">
+      <div class="node-type" style="background:#DCFCE7;color:#16A34A">Consulta</div>
+      <div class="node-icon" style="color:#16A34A"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
+      <div class="node-label">Buscar Info</div>
+      <div class="node-desc">Base conocimiento</div>
+    </div>
+
+    <div class="node" style="left:980px;top:100px;min-width:120px">
+      <div class="node-type" style="background:#F3E8FF;color:#7C3AED">Queja</div>
+      <div class="node-icon" style="color:#7C3AED"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></div>
+      <div class="node-label">Crear Ticket</div>
+      <div class="node-desc">Escalar si grave</div>
+    </div>
+
+    <div class="node" style="left:980px;top:170px;min-width:120px">
+      <div class="node-type" style="background:#FEE2E2;color:#DC2626">Pedido</div>
+      <div class="node-icon" style="color:#DC2626"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>
+      <div class="node-label">Gestionar Pedido</div>
+      <div class="node-desc">Estado / Nuevo</div>
+    </div>
+
+    <div class="node" style="left:1210px;top:95px">
+      <div class="node-type type-response">Final</div>
+      <div class="node-icon" style="color:#DB2777"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></div>
+      <div class="node-label">Responder Cliente</div>
+      <div class="node-desc">Personalizado IA</div>
+    </div>
+  </div>
+
+  <!-- CHAT PREVIEW -->
+  <div class="chat-side">
+    <div class="chat-header">
+      <div class="online"></div>
+      <h3>Chat en Vivo - Vista Previa</h3>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg msg-bot"><div class="bot-label">Asistente IA</div>Hola! Soy el asistente virtual de tu empresa. ¿En que puedo ayudarte hoy?</div>
+      <div class="msg msg-user">Hola, quiero saber el estado de mi pedido #4523</div>
+      <div class="msg msg-bot"><div class="bot-label">Asistente IA</div>Deja que compruebe el estado de tu pedido #4523...<br><br><strong>Pedido #4523</strong><br>Estado: En camino <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg><br>Entrega estimada: 21 Feb 2026<br>Transportista: SEUR<br>Tracking: ES789456123<br><br>¿Necesitas algo mas sobre este pedido?</div>
+      <div class="msg msg-user">Perfecto! Tambien tengo un problema con el producto que recibi la semana pasada, vino con un desperfecto</div>
+      <div class="msg msg-bot"><div class="bot-label">Asistente IA</div>Lamento escuchar eso. He creado automaticamente un ticket de soporte:<br><br><strong>Ticket #T-892</strong><br>Tipo: Producto defectuoso<br>Prioridad: Alta<br>Estado: Abierto<br><br>Un agente te contactara en menos de 2 horas. ¿Puedes describirme el desperfecto o enviar una foto?</div>
+    </div>
+    <div class="msg-typing" id="typing"><div class="typing-dots"><span></span><span></span><span></span></div></div>
+
+    <!-- Confidence -->
+    <div class="confidence">
+      <span class="confidence-label">Confianza IA:</span>
+      <div class="confidence-bar"><div class="confidence-fill" id="confFill"></div></div>
+      <span class="confidence-val" id="confVal">92%</span>
+    </div>
+
+    <!-- Intent panel -->
+    <div class="intent-panel">
+      <div class="intent-title">Intenciones Detectadas</div>
+      <div class="intent-bar"><span class="intent-name">Pedido</span><div class="intent-fill-wrap"><div class="intent-fill" style="width:85%;background:#2563EB"></div></div><span class="intent-pct">85%</span></div>
+      <div class="intent-bar"><span class="intent-name">Queja</span><div class="intent-fill-wrap"><div class="intent-fill" style="width:72%;background:#7C3AED"></div></div><span class="intent-pct">72%</span></div>
+      <div class="intent-bar"><span class="intent-name">Consulta</span><div class="intent-fill-wrap"><div class="intent-fill" style="width:15%;background:#94A3B8"></div></div><span class="intent-pct">15%</span></div>
+    </div>
+
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter')sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">→</button>
+    </div>
+  </div>
+</div>
+
+<div class="watermark">Prototipo GT Dev Solutions &bull; Demo interactiva &bull; AI Agent / Chatbot Workflow</div>
+
+<script>
+const responses=[
+  {user:'Cuanto cuesta el envio a Barcelona?',bot:'El envio estandar a Barcelona tiene un coste de <strong>€4.95</strong> (3-5 dias habiles). Si prefieres envio express (24h), el precio es <strong>€9.95</strong>.<br><br>Para pedidos superiores a €50, el envio estandar es <strong>gratuito</strong>! ¿Te puedo ayudar con algo mas?',conf:95,intents:[{n:'Consulta',v:92},{n:'Pedido',v:30},{n:'Queja',v:5}]},
+  {user:'Quiero hacer una devolucion',bot:'Por supuesto. Para iniciar una devolucion necesito:<br><br>1. Numero de pedido<br>2. Motivo de la devolucion<br>3. Foto del producto (si aplica)<br><br>El plazo de devolucion es de <strong>30 dias</strong> desde la recepcion. ¿Me proporcionas el numero de pedido?',conf:88,intents:[{n:'Queja',v:65},{n:'Pedido',v:55},{n:'Consulta',v:20}]},
+  {user:'Teneis algun descuento activo?',bot:'Si, tenemos varias promociones activas ahora mismo:<br><br><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg> <strong>FEBRERO20</strong> - 20% en toda la tienda<br><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> <strong>2x1</strong> en accesorios seleccionados<br><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg> <strong>Envio gratis</strong> en pedidos +€50<br><br>¿Te interesa alguna en particular?',conf:97,intents:[{n:'Consulta',v:95},{n:'Pedido',v:25},{n:'Queja',v:2}]}
+];
+let msgIdx=0;
+function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  const container=document.getElementById('chatMessages');
+  // Add user message
+  const userMsg=document.createElement('div');
+  userMsg.className='msg msg-user';
+  userMsg.textContent=text;
+  container.appendChild(userMsg);
+  input.value='';
+  container.scrollTop=container.scrollHeight;
+  // Show typing
+  const typing=document.getElementById('typing');
+  typing.classList.add('show');
+  container.appendChild(typing);
+  container.scrollTop=container.scrollHeight;
+  // Bot response
+  const resp=responses[msgIdx%responses.length];
+  msgIdx++;
+  setTimeout(()=>{
+    typing.classList.remove('show');
+    const botMsg=document.createElement('div');
+    botMsg.className='msg msg-bot';
+    botMsg.innerHTML='<div class="bot-label">Asistente IA</div>'+resp.bot;
+    container.appendChild(botMsg);
+    container.scrollTop=container.scrollHeight;
+    // Update confidence
+    document.getElementById('confFill').style.width=resp.conf+'%';
+    document.getElementById('confVal').textContent=resp.conf+'%';
+    document.getElementById('confVal').style.color=resp.conf>80?'#10B981':resp.conf>60?'#F59E0B':'#EF4444';
+    // Update intents
+    const bars=document.querySelectorAll('.intent-bar');
+    resp.intents.forEach((intent,i)=>{
+      if(bars[i]){
+        bars[i].querySelector('.intent-name').textContent=intent.n;
+        bars[i].querySelector('.intent-fill').style.width=intent.v+'%';
+        bars[i].querySelector('.intent-pct').textContent=intent.v+'%';
+      }
+    });
+  },1500);
+}
+</script>
+</body>
+</html>

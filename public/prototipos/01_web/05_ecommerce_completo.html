@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechNova - Electronica Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #171717; background: #FAFAFA; }
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+
+  /* HEADER */
+  .header { background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
+  .header-bar { background: #171717; color: #fff; text-align: center; padding: 8px; font-size: 12px; font-weight: 500; }
+  .header-bar span { color: #60a5fa; }
+  .header-main { max-width: 1240px; margin: 0 auto; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+  .logo { font-size: 22px; font-weight: 800; }
+  .logo span { color: #2563EB; }
+  .search-wrap { flex: 1; max-width: 480px; position: relative; }
+  .search-wrap input { width: 100%; padding: 10px 16px 10px 38px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; }
+  .search-wrap input:focus { border-color: #2563EB; }
+  .search-wrap::before { content: ''; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E"); }
+  .autocomplete { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; display: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+  .autocomplete.open { display: block; }
+  .autocomplete-item { padding: 10px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .autocomplete-item:hover { background: #f3f4f6; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .h-btn { background: none; border: none; font-size: 18px; cursor: pointer; position: relative; padding: 6px; }
+  .badge { position: absolute; top: 0; right: -2px; background: #2563EB; color: #fff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .points-badge { background: #f59e0b; color: #171717; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+  /* NAV TABS */
+  .nav-tabs { background: #fff; border-bottom: 1px solid #e5e7eb; }
+  .nav-inner { max-width: 1240px; margin: 0 auto; padding: 0 24px; display: flex; gap: 0; overflow-x: auto; }
+  .tab-btn { padding: 12px 18px; font-size: 13px; font-weight: 500; color: #525252; cursor: pointer; border: none; background: none; font-family: inherit; border-bottom: 2px solid transparent; white-space: nowrap; transition: .2s; }
+  .tab-btn:hover, .tab-btn.active { color: #2563EB; border-bottom-color: #2563EB; }
+
+  /* LAYOUT */
+  .container { max-width: 1240px; margin: 0 auto; padding: 24px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* FILTERS SIDEBAR + GRID */
+  .shop-layout { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+  .filters { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.06); height: fit-content; position: sticky; top: 120px; }
+  .filter-section { margin-bottom: 24px; }
+  .filter-section h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .filter-cats { list-style: none; }
+  .filter-cats li { padding: 6px 0; font-size: 13px; color: #525252; cursor: pointer; transition: color .2s; }
+  .filter-cats li:hover, .filter-cats li.active { color: #2563EB; font-weight: 500; }
+  .price-range { width: 100%; margin: 8px 0; accent-color: #2563EB; }
+  .price-labels { display: flex; justify-content: space-between; font-size: 12px; color: #525252; }
+  .rating-filter { display: flex; flex-direction: column; gap: 4px; }
+  .rating-option { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; padding: 4px 0; }
+  .rating-option input { accent-color: #2563EB; }
+  .filter-clear { background: none; border: 1px solid #d1d5db; padding: 8px; border-radius: 8px; width: 100%; font-family: inherit; font-size: 13px; cursor: pointer; margin-top: 8px; }
+
+  /* PRODUCT GRID */
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+  .p-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .3s, box-shadow .3s; cursor: pointer; position: relative; }
+  .p-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+  .p-img { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 48px; position: relative; }
+  .p-badge { position: absolute; top: 10px; left: 10px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #fff; }
+  .p-actions { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; opacity: 0; transition: opacity .3s; }
+  .p-card:hover .p-actions { opacity: 1; }
+  .p-action-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.95); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+  .p-info { padding: 14px; }
+  .p-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .p-rating { font-size: 12px; color: #f59e0b; margin-bottom: 6px; }
+  .p-rating span { color: #9ca3af; margin-left: 4px; }
+  .p-price { font-size: 17px; font-weight: 700; }
+  .p-old { text-decoration: line-through; color: #9ca3af; font-size: 13px; font-weight: 400; margin-left: 6px; }
+  .p-add { display: block; width: calc(100% - 28px); margin: 0 14px 14px; padding: 10px; background: #2563EB; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
+  .p-add:hover { background: #1d4ed8; }
+
+  /* PRODUCT DETAIL */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .detail-gallery { display: flex; flex-direction: column; gap: 12px; }
+  .detail-main-img { border-radius: 12px; height: 360px; display: flex; align-items: center; justify-content: center; font-size: 96px; }
+  .detail-thumbs { display: flex; gap: 8px; }
+  .detail-thumb { width: 72px; height: 72px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 2px solid transparent; transition: border-color .2s; }
+  .detail-thumb:hover, .detail-thumb.active { border-color: #2563EB; }
+  .detail-info h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .detail-rating { font-size: 14px; color: #f59e0b; margin-bottom: 12px; }
+  .detail-rating span { color: #525252; font-size: 13px; }
+  .detail-price { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+  .detail-desc { font-size: 14px; color: #525252; line-height: 1.7; margin-bottom: 20px; }
+  .option-group { margin-bottom: 16px; }
+  .option-group label { font-size: 13px; font-weight: 500; color: #525252; display: block; margin-bottom: 8px; }
+  .option-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt-btn { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; transition: .2s; }
+  .opt-btn:hover, .opt-btn.selected { border-color: #2563EB; background: #eff6ff; color: #2563EB; }
+  .color-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #e5e7eb; cursor: pointer; transition: .2s; }
+  .color-btn:hover, .color-btn.selected { border-color: #2563EB; box-shadow: 0 0 0 2px #2563EB; }
+  .detail-actions { display: flex; gap: 12px; margin-top: 20px; }
+  .btn-detail { flex: 1; padding: 14px; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: .2s; }
+  .btn-cart { background: #2563EB; color: #fff; }
+  .btn-cart:hover { background: #1d4ed8; }
+  .btn-wish { background: #fff; border: 2px solid #e5e7eb; color: #525252; }
+  .btn-wish:hover { border-color: #ef4444; color: #ef4444; }
+  .btn-compare { background: #fff; border: 2px solid #e5e7eb; color: #525252; flex: 0; padding: 14px 18px; }
+
+  /* REVIEWS */
+  .reviews-section { background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .reviews-section h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+  .review { padding: 16px 0; border-bottom: 1px solid #f3f4f6; }
+  .review:last-child { border-bottom: none; }
+  .review-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .review-author { font-weight: 600; font-size: 14px; }
+  .review-date { font-size: 12px; color: #9ca3af; }
+  .review-stars { color: #f59e0b; font-size: 13px; margin-bottom: 6px; }
+  .review-text { font-size: 14px; color: #525252; line-height: 1.6; }
+
+  /* WISHLIST */
+  .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+  /* ACCOUNT */
+  .account-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+  .account-nav { background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); height: fit-content; }
+  .account-nav-item { padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; transition: .2s; display: flex; align-items: center; gap: 10px; }
+  .account-nav-item:hover { background: #f3f4f6; }
+  .account-nav-item.active { background: #eff6ff; color: #2563EB; font-weight: 500; }
+  .account-panel { display: none; }
+  .account-panel.active { display: block; }
+  .account-card { background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; }
+  .account-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .order-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+  .order-status { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #525252; }
+  .form-group input { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; }
+  .form-group input:focus { border-color: #2563EB; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* COMPARISON TABLE */
+  .compare-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .compare-table th, .compare-table td { padding: 14px 20px; text-align: center; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+  .compare-table th { background: #f9fafb; font-weight: 600; }
+  .compare-table td:first-child { text-align: left; font-weight: 500; color: #525252; }
+
+  /* ADMIN */
+  .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .admin-stat { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .admin-stat .label { font-size: 13px; color: #525252; margin-bottom: 6px; }
+  .admin-stat .value { font-size: 24px; font-weight: 700; }
+  .admin-stat .change { font-size: 12px; margin-top: 4px; }
+  .admin-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .admin-table th, .admin-table td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  .admin-table th { background: #f9fafb; font-weight: 600; color: #525252; text-transform: uppercase; font-size: 11px; letter-spacing: .5px; }
+  .status { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .s-green { background: #dcfce7; color: #16a34a; }
+  .s-yellow { background: #fef3c7; color: #d97706; }
+  .s-red { background: #fef2f2; color: #ef4444; }
+  .s-blue { background: #dbeafe; color: #2563EB; }
+  .alert-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #991b1b; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+  /* NEWSLETTER POPUP */
+  .newsletter-popup { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 500; backdrop-filter: blur(4px); }
+  .newsletter-popup.hidden { display: none; }
+  .newsletter-box { background: #fff; border-radius: 16px; max-width: 480px; width: 95%; overflow: hidden; position: relative; }
+  .newsletter-top { background: url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=450&fit=crop&q=80') center/cover no-repeat; padding: 40px 32px; text-align: center; color: #fff; position: relative; }
+  .newsletter-top::before { content: ''; position: absolute; inset: 0; background: rgba(37,99,235,.8); }
+  .newsletter-top > * { position: relative; z-index: 1; }
+  .newsletter-top h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .newsletter-top p { font-size: 14px; opacity: .85; }
+  .newsletter-form { padding: 28px 32px; }
+  .newsletter-form input { width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 12px; }
+  .newsletter-form button { width: 100%; padding: 12px; background: #2563EB; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .newsletter-close { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.2); border: none; width: 32px; height: 32px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 18px; }
+  .newsletter-skip { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #525252; cursor: pointer; }
+
+  /* CART DRAWER */
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; display: none; }
+  .cart-overlay.open { display: block; }
+  .cart-drawer { position: fixed; top: 0; right: -420px; width: 400px; max-width: 90vw; height: 100vh; background: #fff; z-index: 201; display: flex; flex-direction: column; transition: right .35s ease; box-shadow: -4px 0 20px rgba(0,0,0,.1); }
+  .cart-drawer.open { right: 0; }
+  .cart-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+  .cart-header h3 { font-size: 18px; font-weight: 700; }
+  .cart-close { background: none; border: none; font-size: 22px; cursor: pointer; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+  .cart-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .ci-img { width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .ci-info { flex: 1; }
+  .ci-info h4 { font-size: 14px; font-weight: 600; }
+  .ci-info p { font-size: 12px; color: #525252; }
+  .ci-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .ci-price { font-weight: 600; font-size: 14px; }
+  .ci-qty { display: flex; align-items: center; gap: 6px; }
+  .ci-qty button { width: 22px; height: 22px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px; }
+  .ci-remove { font-size: 11px; color: #ef4444; cursor: pointer; background: none; border: none; margin-top: 2px; }
+  .cart-footer { padding: 20px 24px; border-top: 1px solid #e5e7eb; }
+  .cart-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+  .checkout-btn { width: 100%; padding: 14px; background: #2563EB; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .cart-empty { text-align: center; padding: 48px 0; color: #525252; font-size: 14px; }
+  .cart-empty span { font-size: 40px; display: block; margin-bottom: 8px; }
+
+  /* FOOTER */
+  .footer { background: #171717; color: #fff; padding: 40px 24px 20px; margin-top: 48px; }
+  .footer-inner { max-width: 1240px; margin: 0 auto; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 28px; }
+  .footer h4 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .footer p, .footer a { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.8; display: block; }
+  .footer a:hover { color: #fff; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .footer-bottom p { font-size: 12px; color: rgba(255,255,255,.3); }
+  .watermark { font-size: 11px; color: rgba(255,255,255,.2); }
+
+  /* BAR CHART */
+  .mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; }
+  .mini-bar { flex: 1; border-radius: 4px 4px 0 0; transition: height .6s; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #16a34a; color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; transform: translateY(100px); opacity: 0; transition: all .4s; z-index: 600; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .btn-sm { padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+
+  @media (max-width: 900px) {
+    .shop-layout { grid-template-columns: 1fr; }
+    .filters { display: none; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .account-layout { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .search-wrap { display: none; }
+    .products-grid { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NEWSLETTER POPUP -->
+<div class="newsletter-popup" id="newsletterPopup">
+  <div class="newsletter-box">
+    <button class="newsletter-close" onclick="closeNewsletter()">✕</button>
+    <div class="newsletter-top">
+      <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+      <h2>10% de Descuento</h2>
+      <p>Suscribete y recibe un 10% en tu primera compra</p>
+    </div>
+    <div class="newsletter-form">
+      <input type="email" placeholder="tu@email.com">
+      <button onclick="closeNewsletter(); showToast('Suscripcion confirmada. Revisa tu email.')">Suscribirme</button>
+      <span class="newsletter-skip" onclick="closeNewsletter()">No, gracias</span>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-bar">Envio gratuito en pedidos superiores a <span>€50</span> | Devoluciones gratis 30 dias</div>
+  <div class="header-main">
+    <div class="logo">Tech<span>Nova</span></div>
+    <div class="search-wrap">
+      <input type="text" placeholder="Buscar productos..." oninput="handleSearch(this.value)" onfocus="handleSearch(this.value)">
+      <div class="autocomplete" id="autocomplete"></div>
+    </div>
+    <div class="header-actions">
+      <span class="points-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 2,450 pts</span>
+      <button class="h-btn" onclick="switchView('wishlist')" title="Favoritos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> <span class="badge" id="wishBadge">0</span></button>
+      <button class="h-btn" onclick="switchView('account')" title="Mi cuenta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+      <button class="h-btn" onclick="openCart()" title="Carrito"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> <span class="badge" id="cartBadge">0</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-tabs">
+  <div class="nav-inner">
+    <button class="tab-btn active" onclick="switchView('shop', this)">Tienda</button>
+    <button class="tab-btn" onclick="switchView('wishlist', this)">Favoritos</button>
+    <button class="tab-btn" onclick="switchView('compare', this)">Comparar</button>
+    <button class="tab-btn" onclick="switchView('account', this)">Mi Cuenta</button>
+    <button class="tab-btn" onclick="switchView('admin', this)">Admin</button>
+  </div>
+</nav>
+
+<!-- SHOP VIEW -->
+<div class="container view active" id="view-shop">
+  <div class="shop-layout">
+    <aside class="filters">
+      <div class="filter-section">
+        <h4>Categorias</h4>
+        <ul class="filter-cats" id="filterCats">
+          <li class="active" onclick="filterCat('all',this)">Todos los productos</li>
+          <li onclick="filterCat('moviles',this)">Moviles</li>
+          <li onclick="filterCat('portatiles',this)">Portatiles</li>
+          <li onclick="filterCat('audio',this)">Audio</li>
+          <li onclick="filterCat('accesorios',this)">Accesorios</li>
+          <li onclick="filterCat('gaming',this)">Gaming</li>
+        </ul>
+      </div>
+      <div class="filter-section">
+        <h4>Precio Maximo</h4>
+        <input type="range" class="price-range" min="0" max="2000" value="2000" oninput="document.getElementById('priceVal').textContent='€'+this.value; filterByPrice(+this.value);">
+        <div class="price-labels"><span>€0</span><span id="priceVal">€2000</span></div>
+      </div>
+      <div class="filter-section">
+        <h4>Valoracion Minima</h4>
+        <div class="rating-filter">
+          <label class="rating-option"><input type="radio" name="rating" checked onchange="filterByRating(0)"> Todas</label>
+          <label class="rating-option"><input type="radio" name="rating" onchange="filterByRating(4)"> ★★★★ y mas</label>
+          <label class="rating-option"><input type="radio" name="rating" onchange="filterByRating(4.5)"> ★★★★½ y mas</label>
+        </div>
+      </div>
+      <button class="filter-clear" onclick="resetFilters()">Limpiar Filtros</button>
+    </aside>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:700;">Productos <span id="pCount" style="color:#525252;font-weight:400;font-size:14px;"></span></h2>
+      </div>
+      <div class="products-grid" id="productsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL VIEW -->
+<div class="container view" id="view-detail">
+  <p style="margin-bottom:16px;"><a onclick="switchView('shop')" style="color:#2563EB;font-size:14px;">← Volver a la tienda</a></p>
+  <div class="detail-grid">
+    <div class="detail-gallery">
+      <div class="detail-main-img" id="detailImg"></div>
+      <div class="detail-thumbs" id="detailThumbs"></div>
+    </div>
+    <div class="detail-info" id="detailInfo"></div>
+  </div>
+  <div class="reviews-section">
+    <h3>Opiniones de Clientes</h3>
+    <div class="review"><div class="review-header"><span class="review-author">Carlos M.</span><span class="review-date">10 Feb 2026</span></div><div class="review-stars">★★★★★</div><div class="review-text">Excelente producto. La calidad es increible y llego en perfectas condiciones. Muy recomendable.</div></div>
+    <div class="review"><div class="review-header"><span class="review-author">Laura S.</span><span class="review-date">8 Feb 2026</span></div><div class="review-stars">★★★★☆</div><div class="review-text">Muy buena relacion calidad-precio. El unico pero es que tardo un poco mas de lo esperado en llegar.</div></div>
+    <div class="review"><div class="review-header"><span class="review-author">Miguel R.</span><span class="review-date">5 Feb 2026</span></div><div class="review-stars">★★★★★</div><div class="review-text">Segundo producto que compro en TechNova y la experiencia siempre es 10/10. Servicio al cliente impecable.</div></div>
+  </div>
+</div>
+
+<!-- WISHLIST VIEW -->
+<div class="container view" id="view-wishlist">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Mis Favoritos</h2>
+  <div class="wishlist-grid" id="wishlistGrid"><p style="color:#525252;text-align:center;padding:40px;">Aun no tienes productos en favoritos. Explora la tienda y anade los que mas te gusten.</p></div>
+</div>
+
+<!-- COMPARE VIEW -->
+<div class="container view" id="view-compare">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Comparar Productos</h2>
+  <div id="compareContent">
+    <table class="compare-table">
+      <thead><tr><th>Caracteristica</th><th><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>NovaPro X1</th><th><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>UltraBook 15</th><th><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>SoundMax Pro</th></tr></thead>
+      <tbody>
+        <tr><td>Precio</td><td><strong>€899</strong></td><td><strong>€1,299</strong></td><td><strong>€249</strong></td></tr>
+        <tr><td>Valoracion</td><td>★★★★★ 4.8</td><td>★★★★½ 4.6</td><td>★★★★★ 4.9</td></tr>
+        <tr><td>Pantalla</td><td>6.7" AMOLED</td><td>15.6" IPS 2K</td><td>N/A</td></tr>
+        <tr><td>Bateria</td><td>5000 mAh</td><td>72 Wh</td><td>30h</td></tr>
+        <tr><td>Peso</td><td>189g</td><td>1.8kg</td><td>250g</td></tr>
+        <tr><td>Almacenamiento</td><td>256GB</td><td>512GB SSD</td><td>N/A</td></tr>
+        <tr><td>Garantia</td><td>2 anos</td><td>2 anos</td><td>1 ano</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ACCOUNT VIEW -->
+<div class="container view" id="view-account">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Mi Cuenta</h2>
+  <div class="account-layout">
+    <div class="account-nav">
+      <div class="account-nav-item active" onclick="showAccountTab('orders',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg> Pedidos</div>
+      <div class="account-nav-item" onclick="showAccountTab('profile',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Perfil</div>
+      <div class="account-nav-item" onclick="showAccountTab('addresses',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Direcciones</div>
+    </div>
+    <div>
+      <div class="account-panel active" id="account-orders">
+        <div class="account-card">
+          <h3>Mis Pedidos</h3>
+          <div class="order-row"><div><strong>#TN-2847</strong><br><span style="font-size:12px;color:#525252;">15 Feb 2026 · 2 productos</span></div><div style="text-align:right;"><span class="status s-blue">En camino</span><br><strong style="font-size:15px;">€348.99</strong></div></div>
+          <div class="order-row"><div><strong>#TN-2831</strong><br><span style="font-size:12px;color:#525252;">8 Feb 2026 · 1 producto</span></div><div style="text-align:right;"><span class="status s-green">Entregado</span><br><strong style="font-size:15px;">€899.00</strong></div></div>
+          <div class="order-row"><div><strong>#TN-2804</strong><br><span style="font-size:12px;color:#525252;">28 Ene 2026 · 3 productos</span></div><div style="text-align:right;"><span class="status s-green">Entregado</span><br><strong style="font-size:15px;">€1,547.97</strong></div></div>
+        </div>
+      </div>
+      <div class="account-panel" id="account-profile">
+        <div class="account-card">
+          <h3>Datos Personales</h3>
+          <div class="form-row"><div class="form-group"><label>Nombre</label><input value="Gustavo Tejera"></div><div class="form-group"><label>Apellidos</label><input value="Duran"></div></div>
+          <div class="form-group"><label>Email</label><input value="gustavo@gtdevsolutions.com"></div>
+          <div class="form-group"><label>Telefono</label><input value="+34 600 123 456"></div>
+          <button class="btn-sm" style="background:#2563EB;color:#fff;margin-top:8px;">Guardar Cambios</button>
+        </div>
+        <div class="account-card">
+          <h3>Programa de Fidelidad</h3>
+          <div style="display:flex;align-items:center;gap:16px;"><span style="font-size:40px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><div><strong style="font-size:22px;">2,450 puntos</strong><br><span style="font-size:13px;color:#525252;">Nivel Gold · 550 pts para Platinum</span></div></div>
+        </div>
+      </div>
+      <div class="account-panel" id="account-addresses">
+        <div class="account-card">
+          <h3>Mis Direcciones</h3>
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:12px;"><strong>Casa</strong><span class="status s-green" style="margin-left:8px;">Principal</span><br><span style="font-size:13px;color:#525252;">Calle Mayor 15, 3B · 28013 Madrid · +34 600 123 456</span></div>
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;"><strong>Oficina</strong><br><span style="font-size:13px;color:#525252;">Paseo de la Castellana 91, 4A · 28046 Madrid · +34 910 456 789</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN VIEW -->
+<div class="container view" id="view-admin">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Panel de Administracion</h2>
+  <div class="admin-grid">
+    <div class="admin-stat"><div class="label">Pedidos Hoy</div><div class="value">47</div><div class="change" style="color:#16a34a;">+12% vs ayer</div></div>
+    <div class="admin-stat"><div class="label">Ingresos Hoy</div><div class="value">€8,340</div><div class="change" style="color:#16a34a;">+8.5%</div></div>
+    <div class="admin-stat"><div class="label">Productos Activos</div><div class="value">342</div><div class="change" style="color:#525252;">+3 nuevos</div></div>
+    <div class="admin-stat"><div class="label">Tasa Conversion</div><div class="value">3.8%</div><div class="change" style="color:#ef4444;">-0.2%</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px;">
+    <div class="account-card" style="margin:0;">
+      <h3>Ingresos Semanal</h3>
+      <div class="mini-chart"><div class="mini-bar" style="height:60%;background:#2563EB;"></div><div class="mini-bar" style="height:75%;background:#2563EB;"></div><div class="mini-bar" style="height:50%;background:#2563EB;"></div><div class="mini-bar" style="height:85%;background:#2563EB;"></div><div class="mini-bar" style="height:65%;background:#2563EB;"></div><div class="mini-bar" style="height:95%;background:#2563EB;"></div><div class="mini-bar" style="height:70%;background:#3b82f6;"></div></div>
+    </div>
+    <div class="account-card" style="margin:0;">
+      <h3>Alertas de Inventario</h3>
+      <div class="alert-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> NovaPro X1 - Solo 3 unidades</div>
+      <div class="alert-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Cable USB-C Trenzado - Solo 5 unidades</div>
+      <div class="alert-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Funda NovaPro Premium - Agotado</div>
+    </div>
+  </div>
+
+  <div class="account-card" style="margin:0;">
+    <h3>Ultimos Pedidos</h3>
+    <table class="admin-table">
+      <thead><tr><th>Pedido</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+      <tbody>
+        <tr><td>#TN-2851</td><td>Maria G.</td><td>2</td><td>€548.99</td><td><span class="status s-yellow">Preparando</span></td><td>19 Feb</td></tr>
+        <tr><td>#TN-2850</td><td>Pedro L.</td><td>1</td><td>€1,299.00</td><td><span class="status s-blue">Enviado</span></td><td>19 Feb</td></tr>
+        <tr><td>#TN-2849</td><td>Ana R.</td><td>3</td><td>€347.97</td><td><span class="status s-green">Entregado</span></td><td>18 Feb</td></tr>
+        <tr><td>#TN-2848</td><td>Luis M.</td><td>1</td><td>€899.00</td><td><span class="status s-green">Entregado</span></td><td>18 Feb</td></tr>
+        <tr><td>#TN-2847</td><td>Gustavo T.</td><td>2</td><td>€348.99</td><td><span class="status s-blue">En camino</span></td><td>17 Feb</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header"><h3>Carrito (<span id="cartCount">0</span>)</h3><button class="cart-close" onclick="closeCart()">✕</button></div>
+  <div class="cart-items" id="cartItems"><div class="cart-empty"><span><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span>Tu carrito esta vacio</div></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;"><div class="cart-total"><span>Total</span><span id="cartTotal">€0</span></div><button class="checkout-btn" onclick="showToast('Redirigiendo al pago...')">Finalizar Compra</button></div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div><div style="font-size:20px;font-weight:800;margin-bottom:12px;">Tech<span style="color:#60a5fa;">Nova</span></div><p>Tu tienda de electronica premium. Productos seleccionados, envio rapido y garantia extendida en todo el catalogo.</p></div>
+      <div><h4>Comprar</h4><a href="#">Moviles</a><a href="#">Portatiles</a><a href="#">Audio</a><a href="#">Accesorios</a><a href="#">Gaming</a></div>
+      <div><h4>Soporte</h4><a href="#">Centro de Ayuda</a><a href="#">Devoluciones</a><a href="#">Envios</a><a href="#">Garantias</a></div>
+      <div><h4>Empresa</h4><a href="#">Sobre Nosotros</a><a href="#">Blog</a><a href="#">Empleo</a><a href="#">Contacto</a></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 TechNova. Todos los derechos reservados.</p><p class="watermark">Prototipo GT Dev Solutions</p></div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const products = [
+  { id:1, name:'NovaPro X1', cat:'moviles', price:899, rating:4.8, reviews:124, desc:'Smartphone flagship con pantalla AMOLED de 6.7", procesador de ultima generacion, 256GB y camara triple de 108MP.', gradient:"url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'Nuevo', colors:['#171717','#e5e7eb','#2563EB'] },
+  { id:2, name:'UltraBook 15', cat:'portatiles', price:1299, rating:4.6, reviews:89, desc:'Portatil ultraligero de 15.6" con pantalla IPS 2K, 16GB RAM, 512GB SSD y 12h de bateria. Perfecto para profesionales.', gradient:"url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', colors:['#525252','#c0c0c0'] },
+  { id:3, name:'SoundMax Pro', cat:'audio', price:249, rating:4.9, reviews:312, desc:'Auriculares over-ear con cancelacion de ruido activa, 30h de bateria y sonido Hi-Res. Audio inmersivo de estudio.', gradient:"url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'Top Ventas', colors:['#171717','#fff'] },
+  { id:4, name:'Cable USB-C Trenzado', cat:'accesorios', price:19.99, rating:4.7, reviews:856, desc:'Cable de carga rapida USB-C a USB-C, 2 metros, trenzado en nylon resistente. Compatible con carga de 100W.', gradient:"url('https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'' },
+  { id:5, name:'NovaPad 12', cat:'portatiles', price:799, oldPrice:899, rating:4.5, reviews:67, desc:'Tablet premium de 12.4" con stylus incluido, 128GB y soporte teclado magnetico. Ideal para creativos.', gradient:"url('https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'-11%' },
+  { id:6, name:'GameStation X', cat:'gaming', price:499, rating:4.7, reviews:203, desc:'Consola gaming de nueva generacion. 4K/120fps, SSD ultrarapido, mando inalambrico incluido y +500 juegos disponibles.', gradient:"url('https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'Nuevo' },
+  { id:7, name:'SmartWatch Nova', cat:'accesorios', price:199, oldPrice:249, rating:4.4, reviews:178, desc:'Reloj inteligente con GPS, monitor cardiaco, 7 dias de bateria y resistencia al agua 5ATM. Diseno premium.', gradient:"url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'-20%' },
+  { id:8, name:'Speaker Boom 360', cat:'audio', price:149, rating:4.6, reviews:445, desc:'Altavoz Bluetooth portatil con sonido 360, resistente al agua IPX7, 20h de bateria y luces LED sincronizadas.', gradient:"url('https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'' },
+  { id:9, name:'Funda NovaPro Premium', cat:'accesorios', price:39.99, rating:4.3, reviews:92, desc:'Funda de cuero sintetico con cierre magnetico, ranuras para tarjetas y soporte horizontal. Compatible NovaPro X1.', gradient:"url('https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'' },
+  { id:10, name:'Monitor UltraWide 34"', cat:'gaming', price:649, rating:4.8, reviews:156, desc:'Monitor curvo ultrawide 34" WQHD, 144Hz, 1ms respuesta, HDR400. Experiencia inmersiva para gaming y productividad.', gradient:"url('https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&h=300&fit=crop&q=80') center/cover no-repeat", emoji:'', badge:'Top Ventas' }
+];
+
+let cart = [];
+let wishlist = [];
+let currentCat = 'all';
+let maxPrice = 2000;
+let minRating = 0;
+
+function renderProducts() {
+  let filtered = products.filter(p => {
+    if (currentCat !== 'all' && p.cat !== currentCat) return false;
+    if (p.price > maxPrice) return false;
+    if (p.rating < minRating) return false;
+    return true;
+  });
+  document.getElementById('pCount').textContent = `(${filtered.length})`;
+  document.getElementById('productsGrid').innerHTML = filtered.map(p => `
+    <div class="p-card" onclick="openDetail(${p.id})">
+      <div class="p-img" style="background:${p.gradient};">
+        ${p.badge ? `<span class="p-badge" style="background:${p.badge.includes('%') ? '#ef4444' : '#2563EB'};">${p.badge}</span>` : ''}
+        <div class="p-actions">
+          <button class="p-action-btn" onclick="event.stopPropagation();toggleWish(${p.id})" title="Favorito">${wishlist.includes(p.id)?'<svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>'}</button>
+          <button class="p-action-btn" onclick="event.stopPropagation();showToast('Anadido a comparar')" title="Comparar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></button>
+        </div>
+      </div>
+      <div class="p-info">
+        <div class="p-name">${p.name}</div>
+        <div class="p-rating">★★★★${p.rating>=4.5?'★':'☆'} <span>${p.rating} (${p.reviews})</span></div>
+        <div class="p-price">€${p.price}${p.oldPrice?`<span class="p-old">€${p.oldPrice}</span>`:''}</div>
+      </div>
+      <button class="p-add" onclick="event.stopPropagation();addToCart(${p.id})">Anadir al Carrito</button>
+    </div>
+  `).join('');
+}
+
+function filterCat(cat, el) { currentCat=cat; document.querySelectorAll('#filterCats li').forEach(l=>l.classList.remove('active')); if(el)el.classList.add('active'); renderProducts(); }
+function filterByPrice(val) { maxPrice=val; renderProducts(); }
+function filterByRating(val) { minRating=val; renderProducts(); }
+function resetFilters() { currentCat='all'; maxPrice=2000; minRating=0; document.querySelector('.price-range').value=2000; document.getElementById('priceVal').textContent='€2000'; document.querySelectorAll('#filterCats li').forEach(l=>l.classList.remove('active')); document.querySelector('#filterCats li').classList.add('active'); document.querySelectorAll('input[name=rating]')[0].checked=true; renderProducts(); }
+
+function openDetail(id) {
+  const p = products.find(x=>x.id===id);
+  document.getElementById('detailImg').style.background = p.gradient;
+  document.getElementById('detailImg').innerHTML = '';
+  const thumbs = (p.colors||['#e5e7eb']).map((c,i) => `<div class="detail-thumb ${i===0?'active':''}" style="background:${c};"></div>`).join('');
+  document.getElementById('detailThumbs').innerHTML = thumbs;
+  let colorsHTML = '';
+  if(p.colors) { colorsHTML = `<div class="option-group"><label>Color:</label><div class="option-btns">${p.colors.map((c,i)=>`<div class="color-btn ${i===0?'selected':''}" style="background:${c};" onclick="document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected');"></div>`).join('')}</div></div>`; }
+  document.getElementById('detailInfo').innerHTML = `
+    <h1>${p.name}</h1>
+    <div class="detail-rating">★★★★${p.rating>=4.5?'★':'☆'} <span>${p.rating} · ${p.reviews} opiniones</span></div>
+    <div class="detail-price">€${p.price} ${p.oldPrice?`<span style="text-decoration:line-through;color:#9ca3af;font-size:18px;font-weight:400;">€${p.oldPrice}</span>`:''}</div>
+    <div class="detail-desc">${p.desc}</div>
+    ${colorsHTML}
+    <div class="detail-actions">
+      <button class="btn-detail btn-cart" onclick="addToCart(${p.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> Anadir al Carrito</button>
+      <button class="btn-detail btn-wish" onclick="toggleWish(${p.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
+      <button class="btn-detail btn-compare" onclick="showToast('Anadido a comparar')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></button>
+    </div>
+    <div style="margin-top:16px;padding:16px;background:#f9fafb;border-radius:8px;font-size:13px;color:#525252;">
+      <div style="margin-bottom:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><path d="M20 6 9 17l-5-5"/></svg> Envio gratuito en 24-48h</div>
+      <div style="margin-bottom:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> Devoluciones gratis 30 dias</div>
+      <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;margin-right:4px;"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg> Garantia oficial 2 anos</div>
+    </div>`;
+  switchView('detail');
+}
+
+function switchView(name, tabEl) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = document.getElementById('view-'+name);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  if(tabEl) tabEl.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function toggleWish(id) {
+  const idx = wishlist.indexOf(id);
+  if(idx>-1) { wishlist.splice(idx,1); showToast('Eliminado de favoritos'); }
+  else { wishlist.push(id); showToast('Anadido a favoritos'); }
+  document.getElementById('wishBadge').textContent = wishlist.length;
+  renderProducts();
+  renderWishlist();
+}
+
+function renderWishlist() {
+  const grid = document.getElementById('wishlistGrid');
+  if(wishlist.length===0) { grid.innerHTML='<p style="color:#525252;text-align:center;padding:40px;">Aun no tienes productos en favoritos.</p>'; return; }
+  grid.innerHTML = wishlist.map(id=>{
+    const p=products.find(x=>x.id===id);
+    return `<div class="p-card" onclick="openDetail(${p.id})"><div class="p-img" style="background:${p.gradient};height:160px;"></div><div class="p-info"><div class="p-name">${p.name}</div><div class="p-price">€${p.price}</div></div><button class="p-add" onclick="event.stopPropagation();addToCart(${p.id})">Anadir al Carrito</button></div>`;
+  }).join('');
+}
+
+function addToCart(id) {
+  const existing=cart.find(c=>c.id===id);
+  if(existing) existing.qty++; else cart.push({id,qty:1});
+  updateCart(); showToast('Producto anadido al carrito');
+}
+function removeFromCart(id) { cart=cart.filter(c=>c.id!==id); updateCart(); }
+function changeQty(id,d) { const i=cart.find(c=>c.id===id); if(i){i.qty+=d; if(i.qty<=0)removeFromCart(id); else updateCart();} }
+
+function updateCart() {
+  const count=cart.reduce((a,c)=>a+c.qty,0);
+  const total=cart.reduce((a,c)=>{const p=products.find(x=>x.id===c.id);return a+p.price*c.qty;},0);
+  document.getElementById('cartBadge').textContent=count;
+  document.getElementById('cartCount').textContent=count;
+  document.getElementById('cartTotal').textContent='€'+total.toFixed(2);
+  const container=document.getElementById('cartItems');
+  const footer=document.getElementById('cartFooter');
+  if(cart.length===0){container.innerHTML='<div class="cart-empty"><span><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span>Tu carrito esta vacio</div>';footer.style.display='none';return;}
+  footer.style.display='block';
+  container.innerHTML=cart.map(c=>{const p=products.find(x=>x.id===c.id);return `<div class="cart-item"><div class="ci-img" style="background:${p.gradient};"></div><div class="ci-info"><h4>${p.name}</h4><p>Ref: TN-${p.id}00${p.id}</p><div class="ci-bottom"><span class="ci-price">€${(p.price*c.qty).toFixed(2)}</span><div class="ci-qty"><button onclick="changeQty(${c.id},-1)">−</button><span>${c.qty}</span><button onclick="changeQty(${c.id},1)">+</button></div></div><button class="ci-remove" onclick="removeFromCart(${c.id})">Eliminar</button></div></div>`;}).join('');
+}
+
+function openCart() { document.getElementById('cartOverlay').classList.add('open'); document.getElementById('cartDrawer').classList.add('open'); }
+function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); document.getElementById('cartDrawer').classList.remove('open'); }
+
+function showAccountTab(tab, el) {
+  document.querySelectorAll('.account-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('account-'+tab).classList.add('active');
+  document.querySelectorAll('.account-nav-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function handleSearch(val) {
+  const ac=document.getElementById('autocomplete');
+  if(val.length<2){ac.classList.remove('open');return;}
+  const matches=products.filter(p=>p.name.toLowerCase().includes(val.toLowerCase())).slice(0,5);
+  if(matches.length===0){ac.classList.remove('open');return;}
+  ac.innerHTML=matches.map(p=>`<div class="autocomplete-item" onclick="openDetail(${p.id});document.getElementById('autocomplete').classList.remove('open');">${p.name} <span style="margin-left:auto;color:#2563EB;font-weight:600;">€${p.price}</span></div>`).join('');
+  ac.classList.add('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('autocomplete').classList.remove('open');});
+
+function closeNewsletter() { document.getElementById('newsletterPopup').classList.add('hidden'); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+// INIT
+renderProducts();
+setTimeout(()=>{ document.getElementById('newsletterPopup').classList.remove('hidden'); }, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App iOS + Android — VitalFit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .page-title{font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:4px;text-align:center}
+  .page-sub{font-size:14px;color:#6b7280;margin-bottom:20px;text-align:center}
+  .screen-toggle{display:flex;background:#fff;border-radius:12px;padding:4px;margin-bottom:24px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .screen-toggle button{flex:1;padding:10px 20px;border:none;border-radius:10px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;background:transparent;color:#6b7280}
+  .screen-toggle button.active{background:#2563EB;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+  .phones{display:flex;gap:32px;align-items:flex-start}
+  .phone-col{display:flex;flex-direction:column;align-items:center}
+  .platform-label{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .platform-label.ios{color:#1a1a1a} .platform-label.android{color:#3ddc84}
+  /* Shared phone */
+  .phone-frame{width:375px;height:812px;border:8px solid #1a1a1a;border-radius:40px;background:#fff;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3),0 0 0 2px #333}
+  /* Android frame slight variation */
+  .android-frame{border-color:#222;box-shadow:0 20px 60px rgba(0,0,0,.25),0 0 0 2px #444}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:28px;background:#1a1a1a;border-radius:0 0 18px 18px;z-index:100}
+  /* Android: punch hole camera */
+  .punch-hole{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:12px;height:12px;background:#1a1a1a;border-radius:50%;z-index:100}
+  .status-bar{height:48px;padding:14px 24px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;position:relative;z-index:50}
+  .status-bar .time{margin-left:8px} .status-bar .icons{display:flex;gap:6px;align-items:center;margin-right:8px;font-size:11px}
+  .screen-area{position:absolute;top:48px;bottom:72px;left:0;right:0;overflow:hidden}
+  .screen{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+  .screen.active{opacity:1;pointer-events:auto} .screen::-webkit-scrollbar{width:0}
+  /* iOS styles */
+  .ios-bg{background:#f2f2f7}
+  .ios h1{font-size:28px;font-weight:800;color:#1a1a1a;margin-bottom:4px}
+  .ios .sub{font-size:13px;color:#8e8e93;margin-bottom:16px}
+  .ios-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px}
+  .ios-card-shadow{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .ios-hero{background:linear-gradient(rgba(255,107,53,0.7),rgba(255,51,102,0.7)),url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=200&fit=crop&q=80') center/cover no-repeat;border-radius:20px;padding:20px;color:#fff;margin-bottom:16px}
+  .ios-hero h2{font-size:16px;font-weight:600;opacity:.9;margin-bottom:2px} .ios-hero h3{font-size:22px;font-weight:800;margin-bottom:6px}
+  .ios-hero p{font-size:12px;opacity:.85}
+  .ios-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .ios-stat{background:#fff;border-radius:14px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .ios-stat .val{font-size:22px;font-weight:800;color:#FF6B35} .ios-stat .lbl{font-size:10px;color:#8e8e93;margin-top:2px}
+  .ios-btn{display:block;width:100%;padding:14px;background:#FF6B35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;text-align:center}
+  .ios-btn:hover{background:#e5602f} .ios-btn:active{transform:scale(.98)}
+  .ios-list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f2f2f7}
+  .ios-list-item:last-child{border:none}
+  .ios-item-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .ios-item-info{flex:1} .ios-item-info h4{font-size:14px;font-weight:600;margin-bottom:1px} .ios-item-info span{font-size:12px;color:#8e8e93}
+  .ios-item-arrow{color:#c7c7cc;font-size:18px}
+  .ios-chip-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px} .ios-chip-row::-webkit-scrollbar{display:none}
+  .ios-chip{padding:7px 14px;border-radius:18px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;background:#fff;color:#8e8e93;border:1.5px solid #e5e5ea;transition:all .2s}
+  .ios-chip.active{background:#FF6B35;color:#fff;border-color:#FF6B35}
+  .ios-progress{height:8px;background:#f2f2f7;border-radius:4px;overflow:hidden;margin-bottom:4px}
+  .ios-progress-fill{height:100%;border-radius:4px}
+  .ios-achievement{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f2f2f7}
+  .ios-achievement:last-child{border:none}
+  .ios-badge{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .ios-ach-info{flex:1} .ios-ach-info h4{font-size:13px;font-weight:600} .ios-ach-info span{font-size:11px;color:#8e8e93}
+  /* iOS bottom tab bar */
+  .ios-tab-bar{position:absolute;bottom:0;left:0;right:0;height:72px;background:rgba(249,249,249,.94);backdrop-filter:blur(20px);border-top:0.5px solid #c6c6c8;display:flex;align-items:center;justify-content:space-around;padding-bottom:8px;z-index:50}
+  .ios-tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 14px}
+  .ios-tab .ti{font-size:22px;opacity:.3;transition:opacity .2s} .ios-tab .tl{font-size:10px;font-weight:500;color:#8e8e93;transition:color .2s}
+  .ios-tab.active .ti{opacity:1} .ios-tab.active .tl{color:#FF6B35;font-weight:600}
+  /* Android styles */
+  .and-bg{background:#fafafa}
+  .and h1{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+  .and .sub{font-size:13px;color:#757575;margin-bottom:16px}
+  .and-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06)}
+  .and-hero{background:linear-gradient(rgba(61,220,132,0.7),rgba(0,191,165,0.7)),url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=200&fit=crop&q=80') center/cover no-repeat;border-radius:12px;padding:20px;color:#fff;margin-bottom:16px}
+  .and-hero h2{font-size:14px;font-weight:500;opacity:.9;margin-bottom:2px} .and-hero h3{font-size:20px;font-weight:700;margin-bottom:6px}
+  .and-hero p{font-size:12px;opacity:.85}
+  .and-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .and-stat{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .and-stat .val{font-size:22px;font-weight:800;color:#00bfa5} .and-stat .lbl{font-size:10px;color:#757575;margin-top:2px}
+  .and-btn{display:block;width:100%;padding:14px;background:#3ddc84;color:#1a1a1a;border:none;border-radius:28px;font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;text-align:center;box-shadow:0 2px 8px rgba(61,220,132,.3)}
+  .and-btn:hover{background:#33c576} .and-btn:active{transform:scale(.98)}
+  .fab{position:absolute;bottom:82px;right:16px;width:56px;height:56px;border-radius:16px;background:#3ddc84;color:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 12px rgba(61,220,132,.4);cursor:pointer;z-index:60;transition:transform .2s}
+  .fab:hover{transform:scale(1.05)}
+  .and-list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f5f5f5}
+  .and-list-item:last-child{border:none}
+  .and-item-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .and-item-info{flex:1} .and-item-info h4{font-size:14px;font-weight:500;margin-bottom:1px} .and-item-info span{font-size:12px;color:#757575}
+  .and-chip-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px} .and-chip-row::-webkit-scrollbar{display:none}
+  .and-chip{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;background:#f5f5f5;color:#757575;transition:all .2s}
+  .and-chip.active{background:#e8f5e9;color:#1b5e20;font-weight:600}
+  .and-progress{height:8px;background:#f5f5f5;border-radius:4px;overflow:hidden;margin-bottom:4px}
+  .and-progress-fill{height:100%;border-radius:4px}
+  .and-achievement{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5}
+  .and-achievement:last-child{border:none}
+  .and-badge{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .and-ach-info{flex:1} .and-ach-info h4{font-size:13px;font-weight:500} .and-ach-info span{font-size:11px;color:#757575}
+  /* Android bottom nav */
+  .and-nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:none;box-shadow:0 -2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-around;padding-bottom:8px;z-index:50}
+  .and-tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 14px;position:relative}
+  .and-tab .ti{font-size:22px;opacity:.3;transition:opacity .2s} .and-tab .tl{font-size:10px;font-weight:500;color:#757575;transition:all .2s}
+  .and-tab.active .ti{opacity:1} .and-tab.active .tl{color:#1b5e20;font-weight:600}
+  .and-tab.active::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:32px;height:3px;background:#3ddc84;border-radius:0 0 3px 3px}
+  /* Charts */
+  .chart-row{display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:4px}
+  .chart-bar{flex:1;border-radius:3px 3px 0 0;transition:height .5s;cursor:pointer} .chart-bar:hover{opacity:.8}
+  .chart-lbls{display:flex;gap:4px} .chart-lbls span{flex:1;text-align:center;font-size:8px;color:#999}
+  .streak-row{display:flex;gap:4px;margin-bottom:8px}
+  .streak-day{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+  .proto-label{margin-top:16px;font-size:12px;color:#9ca3af;text-align:center;letter-spacing:.5px}
+  @media(max-width:840px){.phones{flex-direction:column;gap:24px}}
+</style>
+</head>
+<body>
+
+<div class="page-title">VitalFit — App Multiplataforma</div>
+<div class="page-sub">Misma app, experiencia nativa en cada plataforma</div>
+
+<div class="screen-toggle">
+  <button class="active" onclick="switchScreen(0,this)">Inicio</button>
+  <button onclick="switchScreen(1,this)">Entrenamientos</button>
+  <button onclick="switchScreen(2,this)">Progreso</button>
+</div>
+
+<div class="phones">
+  <!-- ============ iOS ============ -->
+  <div class="phone-col">
+    <div class="platform-label ios"> iOS</div>
+    <div class="phone-frame">
+      <div class="notch"></div>
+      <div class="status-bar" style="color:#1a1a1a;background:#f2f2f7">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>WiFi</span> <span>100%</span></div>
+      </div>
+      <div class="screen-area">
+        <!-- iOS Home -->
+        <div class="screen ios ios-bg active" id="ios-0">
+          <h1>Hola, Carlos</h1>
+          <p class="sub">Llevas 12 días seguidos entrenando</p>
+          <div class="ios-hero">
+            <h2>ENTRENAMIENTO DEL DÍA</h2>
+            <h3>Full Body HIIT</h3>
+            <p>45 min · 420 kcal estimadas · Nivel intermedio</p>
+            <button class="ios-btn" style="background:rgba(255,255,255,.2);margin-top:12px;backdrop-filter:blur(8px)">Empezar ahora</button>
+          </div>
+          <div class="ios-stat-row">
+            <div class="ios-stat"><div class="val">1.280</div><div class="lbl">Calorías hoy</div></div>
+            <div class="ios-stat"><div class="val">8.4K</div><div class="lbl">Pasos</div></div>
+            <div class="ios-stat"><div class="val">45</div><div class="lbl">Min activo</div></div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <h2 style="margin:0;font-size:15px">Racha semanal</h2>
+              <span style="font-size:12px;color:#FF6B35;font-weight:600">12 días</span>
+            </div>
+            <div class="streak-row">
+              <div class="streak-day" style="background:#FF6B35;color:#fff">L</div>
+              <div class="streak-day" style="background:#FF6B35;color:#fff">M</div>
+              <div class="streak-day" style="background:#FF6B35;color:#fff">X</div>
+              <div class="streak-day" style="background:#FF6B35;color:#fff">J</div>
+              <div class="streak-day" style="background:#FF6B35;color:#fff">V</div>
+              <div class="streak-day" style="background:#ffedd5;color:#FF6B35">S</div>
+              <div class="streak-day" style="background:#f2f2f7;color:#c7c7cc">D</div>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <h2 style="font-size:15px;margin-bottom:8px">Próximos entrenamientos</h2>
+            <div class="ios-list-item">
+              <div class="ios-item-icon" style="background:#fff3e0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="ios-item-info"><h4>Fuerza — Tren Superior</h4><span>Mañana · 50 min</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+            <div class="ios-list-item">
+              <div class="ios-item-icon" style="background:#e3f2fd"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+              <div class="ios-item-info"><h4>Yoga Flow</h4><span>Jueves · 30 min</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+        </div>
+        <!-- iOS Entrenamientos -->
+        <div class="screen ios ios-bg" id="ios-1">
+          <h1>Entrenamientos</h1>
+          <p class="sub">Programas adaptados a tu nivel</p>
+          <div class="ios-chip-row">
+            <div class="ios-chip active">Todos</div>
+            <div class="ios-chip">Fuerza</div>
+            <div class="ios-chip">Cardio</div>
+            <div class="ios-chip">HIIT</div>
+            <div class="ios-chip">Yoga</div>
+            <div class="ios-chip">Estirar</div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#FF6B35,#FF3366);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+              <div class="ios-item-info"><h4>Full Body HIIT</h4><span>45 min · Intermedio · 420 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#2563EB,#60a5fa);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="ios-item-info"><h4>Fuerza — Tren Superior</h4><span>50 min · Avanzado · 380 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+              <div class="ios-item-info"><h4>Yoga Flow</h4><span>30 min · Principiante · 150 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+              <div class="ios-item-info"><h4>Cardio Quemagrasa</h4><span>40 min · Intermedio · 350 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="ios-item-info"><h4>Fuerza — Piernas</h4><span>55 min · Avanzado · 400 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <div class="ios-list-item" style="border:none;padding:0">
+              <div class="ios-item-icon" style="background:linear-gradient(135deg,#ec4899,#f472b6);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
+              <div class="ios-item-info"><h4>Estiramientos Post-Entreno</h4><span>15 min · Todos los niveles · 80 kcal</span></div>
+              <span class="ios-item-arrow">›</span>
+            </div>
+          </div>
+        </div>
+        <!-- iOS Progreso -->
+        <div class="screen ios ios-bg" id="ios-2">
+          <h1>Tu Progreso</h1>
+          <p class="sub">Resumen de febrero 2026</p>
+          <div class="ios-stat-row">
+            <div class="ios-stat"><div class="val">18</div><div class="lbl">Entrenos</div></div>
+            <div class="ios-stat"><div class="val">14h</div><div class="lbl">Tiempo total</div></div>
+            <div class="ios-stat"><div class="val">6.2K</div><div class="lbl">Kcal total</div></div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <h2 style="font-size:15px;margin-bottom:10px">Actividad semanal</h2>
+            <div class="chart-row">
+              <div class="chart-bar" style="height:45%;background:linear-gradient(#FF6B35,#FF3366)"></div>
+              <div class="chart-bar" style="height:70%;background:linear-gradient(#FF6B35,#FF3366)"></div>
+              <div class="chart-bar" style="height:100%;background:linear-gradient(#FF6B35,#FF3366)"></div>
+              <div class="chart-bar" style="height:60%;background:linear-gradient(#FF6B35,#FF3366)"></div>
+              <div class="chart-bar" style="height:85%;background:linear-gradient(#FF6B35,#FF3366)"></div>
+              <div class="chart-bar" style="height:30%;background:#ffedd5"></div>
+              <div class="chart-bar" style="height:0%;background:#f2f2f7"></div>
+            </div>
+            <div class="chart-lbls"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <h2 style="font-size:15px;margin-bottom:10px">Objetivos</h2>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Calorías semanales</span><span style="font-weight:600;color:#FF6B35">4.200 / 5.000</span></div>
+              <div class="ios-progress"><div class="ios-progress-fill" style="width:84%;background:linear-gradient(90deg,#FF6B35,#FF3366)"></div></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Entrenos semanales</span><span style="font-weight:600;color:#FF6B35">5 / 5</span></div>
+              <div class="ios-progress"><div class="ios-progress-fill" style="width:100%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Peso objetivo</span><span style="font-weight:600;color:#FF6B35">76.2 / 75.0 kg</span></div>
+              <div class="ios-progress"><div class="ios-progress-fill" style="width:92%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+            </div>
+          </div>
+          <div class="ios-card ios-card-shadow">
+            <h2 style="font-size:15px;margin-bottom:8px">Logros recientes</h2>
+            <div class="ios-achievement">
+              <div class="ios-badge" style="background:#fef3c7"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="ios-ach-info"><h4>Racha de 10 días</h4><span>Conseguido el 17 Feb</span></div>
+            </div>
+            <div class="ios-achievement">
+              <div class="ios-badge" style="background:#dbeafe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="ios-ach-info"><h4>50 entrenamientos totales</h4><span>Conseguido el 12 Feb</span></div>
+            </div>
+            <div class="ios-achievement">
+              <div class="ios-badge" style="background:#d1fae5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+              <div class="ios-ach-info"><h4>Objetivo semanal x4</h4><span>Conseguido el 9 Feb</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ios-tab-bar">
+        <div class="ios-tab active" onclick="switchIos(0)"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="tl">Inicio</span></div>
+        <div class="ios-tab" onclick="switchIos(1)"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="tl">Entrenos</span></div>
+        <div class="ios-tab" onclick="switchIos(2)"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span><span class="tl">Progreso</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ANDROID ============ -->
+  <div class="phone-col">
+    <div class="platform-label android"> Android</div>
+    <div class="phone-frame android-frame">
+      <div class="punch-hole"></div>
+      <div class="status-bar" style="color:#1a1a1a;background:#fafafa">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>WiFi</span> <span>100%</span></div>
+      </div>
+      <div class="screen-area">
+        <!-- Android Home -->
+        <div class="screen and and-bg active" id="and-0">
+          <h1>Hola, Carlos</h1>
+          <p class="sub">Llevas 12 días seguidos entrenando</p>
+          <div class="and-hero">
+            <h2>ENTRENAMIENTO DEL DÍA</h2>
+            <h3>Full Body HIIT</h3>
+            <p>45 min · 420 kcal estimadas · Nivel intermedio</p>
+            <button class="and-btn" style="background:rgba(255,255,255,.25);color:#fff;margin-top:12px;box-shadow:none">Empezar ahora</button>
+          </div>
+          <div class="and-stat-row">
+            <div class="and-stat"><div class="val">1.280</div><div class="lbl">Calorías hoy</div></div>
+            <div class="and-stat"><div class="val">8.4K</div><div class="lbl">Pasos</div></div>
+            <div class="and-stat"><div class="val">45</div><div class="lbl">Min activo</div></div>
+          </div>
+          <div class="and-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <h2 style="margin:0;font-size:15px">Racha semanal</h2>
+              <span style="font-size:12px;color:#00bfa5;font-weight:600">12 días</span>
+            </div>
+            <div class="streak-row">
+              <div class="streak-day" style="background:#3ddc84;color:#fff">L</div>
+              <div class="streak-day" style="background:#3ddc84;color:#fff">M</div>
+              <div class="streak-day" style="background:#3ddc84;color:#fff">X</div>
+              <div class="streak-day" style="background:#3ddc84;color:#fff">J</div>
+              <div class="streak-day" style="background:#3ddc84;color:#fff">V</div>
+              <div class="streak-day" style="background:#e8f5e9;color:#3ddc84">S</div>
+              <div class="streak-day" style="background:#f5f5f5;color:#bdbdbd">D</div>
+            </div>
+          </div>
+          <div class="and-card">
+            <h2 style="font-size:15px;margin-bottom:8px">Próximos entrenamientos</h2>
+            <div class="and-list-item">
+              <div class="and-item-icon" style="background:#fff3e0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="and-item-info"><h4>Fuerza — Tren Superior</h4><span>Mañana · 50 min</span></div>
+            </div>
+            <div class="and-list-item">
+              <div class="and-item-icon" style="background:#e3f2fd"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+              <div class="and-item-info"><h4>Yoga Flow</h4><span>Jueves · 30 min</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Android Entrenamientos -->
+        <div class="screen and and-bg" id="and-1">
+          <h1>Entrenamientos</h1>
+          <p class="sub">Programas adaptados a tu nivel</p>
+          <div class="and-chip-row">
+            <div class="and-chip active">Todos</div>
+            <div class="and-chip">Fuerza</div>
+            <div class="and-chip">Cardio</div>
+            <div class="and-chip">HIIT</div>
+            <div class="and-chip">Yoga</div>
+            <div class="and-chip">Estirar</div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#3ddc84,#00bfa5);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+              <div class="and-item-info"><h4>Full Body HIIT</h4><span>45 min · Intermedio · 420 kcal</span></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#2196f3,#64b5f6);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="and-item-info"><h4>Fuerza — Tren Superior</h4><span>50 min · Avanzado · 380 kcal</span></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#4caf50,#81c784);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+              <div class="and-item-info"><h4>Yoga Flow</h4><span>30 min · Principiante · 150 kcal</span></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#ff9800,#ffb74d);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+              <div class="and-item-info"><h4>Cardio Quemagrasa</h4><span>40 min · Intermedio · 350 kcal</span></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#7e57c2,#b39ddb);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="and-item-info"><h4>Fuerza — Piernas</h4><span>55 min · Avanzado · 400 kcal</span></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <div class="and-list-item" style="border:none;padding:0">
+              <div class="and-item-icon" style="background:linear-gradient(135deg,#e91e63,#f48fb1);color:#fff;font-size:18px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
+              <div class="and-item-info"><h4>Estiramientos Post-Entreno</h4><span>15 min · Todos los niveles · 80 kcal</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Android Progreso -->
+        <div class="screen and and-bg" id="and-2">
+          <h1>Tu Progreso</h1>
+          <p class="sub">Resumen de febrero 2026</p>
+          <div class="and-stat-row">
+            <div class="and-stat"><div class="val">18</div><div class="lbl">Entrenos</div></div>
+            <div class="and-stat"><div class="val">14h</div><div class="lbl">Tiempo total</div></div>
+            <div class="and-stat"><div class="val">6.2K</div><div class="lbl">Kcal total</div></div>
+          </div>
+          <div class="and-card">
+            <h2 style="font-size:15px;margin-bottom:10px">Actividad semanal</h2>
+            <div class="chart-row">
+              <div class="chart-bar" style="height:45%;background:linear-gradient(#3ddc84,#00bfa5)"></div>
+              <div class="chart-bar" style="height:70%;background:linear-gradient(#3ddc84,#00bfa5)"></div>
+              <div class="chart-bar" style="height:100%;background:linear-gradient(#3ddc84,#00bfa5)"></div>
+              <div class="chart-bar" style="height:60%;background:linear-gradient(#3ddc84,#00bfa5)"></div>
+              <div class="chart-bar" style="height:85%;background:linear-gradient(#3ddc84,#00bfa5)"></div>
+              <div class="chart-bar" style="height:30%;background:#e8f5e9"></div>
+              <div class="chart-bar" style="height:0%;background:#f5f5f5"></div>
+            </div>
+            <div class="chart-lbls"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+          </div>
+          <div class="and-card">
+            <h2 style="font-size:15px;margin-bottom:10px">Objetivos</h2>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Calorías semanales</span><span style="font-weight:600;color:#00bfa5">4.200 / 5.000</span></div>
+              <div class="and-progress"><div class="and-progress-fill" style="width:84%;background:linear-gradient(90deg,#3ddc84,#00bfa5)"></div></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Entrenos semanales</span><span style="font-weight:600;color:#00bfa5">5 / 5</span></div>
+              <div class="and-progress"><div class="and-progress-fill" style="width:100%;background:linear-gradient(90deg,#4caf50,#81c784)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Peso objetivo</span><span style="font-weight:600;color:#00bfa5">76.2 / 75.0 kg</span></div>
+              <div class="and-progress"><div class="and-progress-fill" style="width:92%;background:linear-gradient(90deg,#ff9800,#ffb74d)"></div></div>
+            </div>
+          </div>
+          <div class="and-card">
+            <h2 style="font-size:15px;margin-bottom:8px">Logros recientes</h2>
+            <div class="and-achievement">
+              <div class="and-badge" style="background:#fff8e1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f57f17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="and-ach-info"><h4>Racha de 10 días</h4><span>Conseguido el 17 Feb</span></div>
+            </div>
+            <div class="and-achievement">
+              <div class="and-badge" style="background:#e3f2fd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="and-ach-info"><h4>50 entrenamientos totales</h4><span>Conseguido el 12 Feb</span></div>
+            </div>
+            <div class="and-achievement">
+              <div class="and-badge" style="background:#e8f5e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+              <div class="and-ach-info"><h4>Objetivo semanal x4</h4><span>Conseguido el 9 Feb</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fab" id="fab" onclick="this.style.transform='scale(0.9)';setTimeout(()=>this.style.transform='',150)">+</div>
+      <div class="and-nav">
+        <div class="and-tab active" onclick="switchAnd(0)"><span class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="tl">Inicio</span></div>
+        <div class="and-tab" onclick="switchAnd(1)"><span class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="tl">Entrenos</span></div>
+        <div class="and-tab" onclick="switchAnd(2)"><span class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span><span class="tl">Progreso</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="proto-label">Prototipo GT Dev Solutions</div>
+
+<script>
+  const iosTabs = document.querySelectorAll('.ios-tab');
+  const andTabs = document.querySelectorAll('.and-tab');
+  const toggleBtns = document.querySelectorAll('.screen-toggle button');
+
+  function switchIos(i) {
+    for(let j=0;j<3;j++){
+      document.getElementById('ios-'+j).classList.toggle('active',j===i);
+      iosTabs[j].classList.toggle('active',j===i);
+    }
+    // sync toggle
+    toggleBtns.forEach((b,idx) => b.classList.toggle('active', idx===i));
+    // sync android
+    switchAndSilent(i);
+  }
+
+  function switchAnd(i) {
+    for(let j=0;j<3;j++){
+      document.getElementById('and-'+j).classList.toggle('active',j===i);
+      andTabs[j].classList.toggle('active',j===i);
+    }
+    toggleBtns.forEach((b,idx) => b.classList.toggle('active', idx===i));
+    switchIosSilent(i);
+  }
+
+  function switchIosSilent(i) {
+    for(let j=0;j<3;j++){
+      document.getElementById('ios-'+j).classList.toggle('active',j===i);
+      iosTabs[j].classList.toggle('active',j===i);
+    }
+  }
+  function switchAndSilent(i) {
+    for(let j=0;j<3;j++){
+      document.getElementById('and-'+j).classList.toggle('active',j===i);
+      andTabs[j].classList.toggle('active',j===i);
+    }
+  }
+
+  function switchScreen(i, btn) {
+    toggleBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    switchIosSilent(i);
+    switchAndSilent(i);
+  }
+
+  // Chip interactivity
+  document.querySelectorAll('.ios-chip-row .ios-chip, .and-chip-row .and-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.parentElement.querySelectorAll('.ios-chip, .and-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow Simple - Auto Email Responder - GT Dev Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B;min-height:100vh;display:flex;flex-direction:column}
+/* Header */
+.header{height:56px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:16px}
+.header h1{font-size:16px;font-weight:600}
+.header h1 span{color:#2563EB}
+.wf-name{font-size:14px;color:#64748B;padding:6px 12px;background:#F1F5F9;border-radius:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.status-active{background:#DCFCE7;color:#16A34A}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
+.btn-primary{background:#2563EB;color:#fff}
+.btn-outline{background:#fff;border:1px solid #E2E8F0;color:#475569}
+/* Stats bar */
+.stats-bar{display:flex;gap:24px;padding:16px 24px;background:#fff;border-bottom:1px solid #E2E8F0}
+.stat-item{display:flex;align-items:center;gap:10px}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-info .label{font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px}
+.stat-info .value{font-size:18px;font-weight:700}
+/* Canvas */
+.canvas-area{flex:1;position:relative;overflow:hidden;background:#F8FAFC;background-image:radial-gradient(#E2E8F0 1px,transparent 1px);background-size:20px 20px;min-height:300px}
+/* Nodes */
+.node{position:absolute;background:#fff;border-radius:14px;padding:20px;border:2px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,.06);cursor:pointer;transition:all .3s;min-width:200px;text-align:center;z-index:2}
+.node:hover{box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateY(-2px)}
+.node.selected{border-color:#2563EB;box-shadow:0 0 0 4px rgba(37,99,235,.15)}
+.node.active{border-color:#10B981;box-shadow:0 0 20px rgba(16,185,129,.25)}
+.node-icon{font-size:32px;margin-bottom:8px}
+.node-label{font-size:13px;font-weight:600;margin-bottom:2px}
+.node-desc{font-size:11px;color:#94A3B8}
+.node-type{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.type-trigger{background:#DCFCE7;color:#16A34A}
+.type-process{background:#DBEAFE;color:#2563EB}
+.type-action{background:#F3E8FF;color:#7C3AED}
+/* Flow lines with animation */
+.flow-line{position:absolute;z-index:1}
+.flow-line svg{overflow:visible}
+.flow-path{fill:none;stroke:#CBD5E1;stroke-width:2;stroke-dasharray:8 4}
+.flow-dot{fill:#2563EB;r:4}
+@keyframes flowMove1{0%{offset-distance:0%}100%{offset-distance:100%}}
+.animated-dot{position:absolute;width:8px;height:8px;background:#2563EB;border-radius:50%;box-shadow:0 0 8px rgba(37,99,235,.6);z-index:3}
+.dot-1{offset-path:path('M 280 160 C 380 160, 380 160, 460 160');animation:flowMove1 2s linear infinite}
+.dot-2{offset-path:path('M 680 160 C 780 160, 780 160, 860 160');animation:flowMove1 2s linear infinite .5s}
+/* Side Panel */
+.side-panel{position:fixed;right:0;top:56px;bottom:0;width:340px;background:#fff;border-left:1px solid #E2E8F0;transform:translateX(100%);transition:transform .3s;z-index:10;display:flex;flex-direction:column}
+.side-panel.open{transform:translateX(0)}
+.panel-header{padding:20px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center}
+.panel-header h3{font-size:15px;font-weight:600}
+.panel-close{width:28px;height:28px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.panel-body{padding:20px;flex:1;overflow-y:auto}
+.config-item{margin-bottom:16px}
+.config-item label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+.config-item input,.config-item select{width:100%;padding:8px 12px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:inherit}
+.config-item .tag-row{display:flex;gap:6px;flex-wrap:wrap}
+.config-tag{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;background:#F1F5F9;color:#475569}
+/* Execution Log */
+.exec-panel{background:#fff;border-top:1px solid #E2E8F0;flex-shrink:0}
+.exec-header{padding:12px 24px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border-bottom:1px solid #E2E8F0}
+.exec-body{max-height:200px;overflow-y:auto}
+.exec-row{display:flex;align-items:center;gap:12px;padding:8px 24px;font-size:12px;border-bottom:1px solid #F1F5F9}
+.exec-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.exec-time{color:#94A3B8;margin-left:auto;white-space:nowrap}
+/* Watermark */
+.watermark{text-align:center;padding:12px;font-size:11px;color:#94A3B8;background:#fff;border-top:1px solid #E2E8F0;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>n8n <span>Workflows</span></h1>
+    <div class="wf-name">Auto Email Responder</div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill status-active"><div style="width:8px;height:8px;background:#16A34A;border-radius:50%"></div> Activo</div>
+    <button class="btn btn-outline">Historial</button>
+    <button class="btn btn-primary" id="runBtn" onclick="runWorkflow()">▶ Ejecutar</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-icon" style="background:#DBEAFE;color:#2563EB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div><div class="stat-info"><div class="label">Emails Procesados</div><div class="value">1,247</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#DCFCE7;color:#16A34A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-info"><div class="label">Tiempo Ahorrado</div><div class="value">62h</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#F3E8FF;color:#7C3AED"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="stat-info"><div class="label">Tasa Exito</div><div class="value">98.3%</div></div></div>
+  <div class="stat-item"><div class="stat-icon" style="background:#FEF3C7;color:#D97706"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></div><div class="stat-info"><div class="label">Hoy</div><div class="value">34</div></div></div>
+</div>
+
+<!-- Canvas with nodes -->
+<div class="canvas-area">
+  <!-- Flow lines SVG -->
+  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none">
+    <path d="M 310 170 C 400 170, 430 170, 490 170" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="8 4"/>
+    <path d="M 710 170 C 800 170, 830 170, 890 170" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="8 4"/>
+    <!-- Arrow heads -->
+    <polygon points="488,165 498,170 488,175" fill="#CBD5E1"/>
+    <polygon points="888,165 898,170 888,175" fill="#CBD5E1"/>
+  </svg>
+
+  <!-- Animated dots -->
+  <div class="animated-dot dot-1"></div>
+  <div class="animated-dot dot-2"></div>
+
+  <!-- Node 1: Trigger -->
+  <div class="node active" id="node-trigger" style="left:110px;top:120px" onclick="selectNode('trigger')">
+    <div class="node-type type-trigger">Trigger</div>
+    <div class="node-icon" style="color:#16A34A"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+    <div class="node-label">Nuevo Email Recibido</div>
+    <div class="node-desc">Gmail - Bandeja Entrada</div>
+  </div>
+
+  <!-- Node 2: Process -->
+  <div class="node" id="node-process" style="left:500px;top:120px" onclick="selectNode('process')">
+    <div class="node-type type-process">Proceso</div>
+    <div class="node-icon" style="color:#2563EB"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg></div>
+    <div class="node-label">Clasificar y Responder</div>
+    <div class="node-desc">Analisis IA + Plantillas</div>
+  </div>
+
+  <!-- Node 3: Action -->
+  <div class="node" id="node-action" style="left:900px;top:120px" onclick="selectNode('action')">
+    <div class="node-type type-action">Accion</div>
+    <div class="node-icon" style="color:#7C3AED"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></div>
+    <div class="node-label">Enviar Respuesta</div>
+    <div class="node-desc">Email personalizado</div>
+  </div>
+</div>
+
+<!-- Side Panel -->
+<div class="side-panel" id="sidePanel">
+  <div class="panel-header">
+    <h3 id="panelTitle">Configuracion</h3>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<!-- Execution Log -->
+<div class="exec-panel">
+  <div class="exec-header" onclick="toggleExec()">
+    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg> Registro de Ejecuciones</span>
+    <span style="font-size:11px;color:#94A3B8">Ultimas 8 ejecuciones</span>
+  </div>
+  <div class="exec-body" id="execBody">
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Consulta precio</strong> → Respuesta enviada a carlos@empresa.es</span><span class="exec-time">Hace 3 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Soporte tecnico</strong> → Ticket #456 creado</span><span class="exec-time">Hace 8 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Seguimiento</strong> → Respuesta automatica enviada</span><span class="exec-time">Hace 15 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#EF4444"></div><span>Error: <strong>Timeout</strong> al conectar con Gmail API - Reintentando...</span><span class="exec-time">Hace 22 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Facturacion</strong> → Redirigido a contabilidad</span><span class="exec-time">Hace 30 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Consulta precio</strong> → Respuesta con catalogo</span><span class="exec-time">Hace 45 min</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Informacion</strong> → Respuesta FAQ automatica</span><span class="exec-time">Hace 1h</span></div>
+    <div class="exec-row"><div class="exec-status" style="background:#10B981"></div><span>Email clasificado: <strong>Reserva</strong> → Confirmacion + calendario</span><span class="exec-time">Hace 1.5h</span></div>
+  </div>
+</div>
+
+<div class="watermark">Prototipo GT Dev Solutions &bull; Demo interactiva &bull; Workflow Simple - Auto Email Responder</div>
+
+<script>
+const nodeConfigs={
+  trigger:{
+    title:'Trigger: Nuevo Email',
+    html:`<div class="config-item"><label>Cuenta Email</label><input value="empresa@gmail.com" readonly></div>
+    <div class="config-item"><label>Carpeta</label><select><option>Bandeja de entrada</option><option>Importante</option><option>Spam</option></select></div>
+    <div class="config-item"><label>Filtro Asunto</label><input value="*" placeholder="Todos los emails"></div>
+    <div class="config-item"><label>Intervalo Revision</label><select><option>Cada 1 minuto</option><option selected>Cada 5 minutos</option><option>Cada 15 minutos</option></select></div>
+    <div class="config-item"><label>Integraciones</label><div class="tag-row"><span class="config-tag">Gmail API</span><span class="config-tag">OAuth 2.0</span></div></div>`
+  },
+  process:{
+    title:'Proceso: Clasificar y Responder',
+    html:`<div class="config-item"><label>Modelo IA</label><select><option>GPT-4o Mini</option><option selected>Claude 3.5 Sonnet</option></select></div>
+    <div class="config-item"><label>Categorias</label><div class="tag-row"><span class="config-tag">Consulta Precio</span><span class="config-tag">Soporte</span><span class="config-tag">Facturacion</span><span class="config-tag">Seguimiento</span><span class="config-tag">Reserva</span></div></div>
+    <div class="config-item"><label>Plantillas Activas</label><input value="12 plantillas configuradas" readonly></div>
+    <div class="config-item"><label>Confianza Minima</label><input value="85%" type="text"></div>
+    <div class="config-item"><label>Si confianza &lt; minima</label><select><option selected>Escalar a humano</option><option>Respuesta generica</option></select></div>`
+  },
+  action:{
+    title:'Accion: Enviar Respuesta',
+    html:`<div class="config-item"><label>Metodo Envio</label><select><option selected>Gmail SMTP</option><option>SendGrid</option></select></div>
+    <div class="config-item"><label>Remitente</label><input value="soporte@empresa.es" readonly></div>
+    <div class="config-item"><label>Firma</label><select><option selected>Firma corporativa</option><option>Sin firma</option></select></div>
+    <div class="config-item"><label>CC Automatico</label><input value="log@empresa.es" type="text"></div>
+    <div class="config-item"><label>Acciones Post-Envio</label><div class="tag-row"><span class="config-tag">Marcar leido</span><span class="config-tag">Etiquetar</span><span class="config-tag">Log CRM</span></div></div>`
+  }
+};
+
+function selectNode(id){
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
+  document.getElementById('node-'+id).classList.add('selected');
+  document.getElementById('panelTitle').textContent=nodeConfigs[id].title;
+  document.getElementById('panelBody').innerHTML=nodeConfigs[id].html;
+  document.getElementById('sidePanel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('sidePanel').classList.remove('open');
+  document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
+}
+function toggleExec(){
+  const body=document.getElementById('execBody');
+  body.style.display=body.style.display==='none'?'block':'none';
+}
+function runWorkflow(){
+  const nodes=document.querySelectorAll('.node');
+  const btn=document.getElementById('runBtn');
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Ejecutando...';btn.style.background='#F59E0B';
+  nodes.forEach((n,i)=>{
+    setTimeout(()=>{n.classList.add('active')},i*800);
+  });
+  setTimeout(()=>{
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M20 6 9 17l-5-5"/></svg> Completado';btn.style.background='#10B981';
+    setTimeout(()=>{btn.innerHTML='▶ Ejecutar';btn.style.background='#2563EB'},2000);
+  },2600);
+}
+</script>
+</body>
+</html>

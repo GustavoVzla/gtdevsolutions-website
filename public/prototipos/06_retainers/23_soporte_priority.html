@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soporte Priority - Portal | Prototipo GT Dev Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B;min-height:100vh}
+
+.header{background:#fff;border-bottom:1px solid #E2E8F0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-logo{width:40px;height:40px;background:linear-gradient(135deg,#7C3AED,#2563EB);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700}
+.header-title h1{font-size:18px;font-weight:700}
+.header-title p{font-size:13px;color:#64748B}
+.header-right{display:flex;align-items:center;gap:12px}
+.plan-badge{background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;letter-spacing:.5px}
+.sla-badge{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:6px 14px;border-radius:20px}
+.sla-dot{width:8px;height:8px;background:#16A34A;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.live-chat{display:flex;align-items:center;gap:6px;background:#F0FDF4;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#16A34A;cursor:pointer;border:1px solid #BBF7D0;transition:all .2s}
+.live-chat:hover{background:#DCFCE7}
+
+.tabs{background:#fff;border-bottom:1px solid #E2E8F0;padding:0 32px;display:flex;gap:0}
+.tab{padding:14px 20px;font-size:14px;font-weight:500;color:#64748B;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tab:hover{color:#1E293B}
+.tab.active{color:#7C3AED;border-bottom-color:#7C3AED;font-weight:600}
+
+.container{max-width:1280px;margin:0 auto;padding:24px 32px}
+.section{display:none}
+.section.active{display:block}
+
+/* ── SLA Dashboard ── */
+.sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.sla-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #E2E8F0;text-align:center}
+.sla-card-label{font-size:12px;color:#64748B;margin-bottom:8px;font-weight:500}
+.sla-card-value{font-size:28px;font-weight:700;margin-bottom:4px}
+.sla-card-target{font-size:12px;color:#94A3B8}
+.sla-card-bar{height:6px;background:#E2E8F0;border-radius:3px;margin-top:10px;overflow:hidden}
+.sla-card-fill{height:100%;border-radius:3px}
+
+/* ── Tickets ── */
+.tickets-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.tickets-title{font-size:18px;font-weight:700}
+.ticket-filters{display:flex;gap:8px}
+.ticket-filter{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #E2E8F0;background:#fff;transition:all .2s;font-family:inherit;color:#64748B}
+.ticket-filter.active{background:#7C3AED;color:#fff;border-color:#7C3AED}
+.ticket-filter:hover:not(.active){background:#F8FAFC}
+.new-ticket-btn{background:#7C3AED;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px}
+.new-ticket-btn:hover{background:#6D28D9}
+
+.ticket-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.ticket-row{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .2s}
+.ticket-row:hover{border-color:#7C3AED;box-shadow:0 4px 12px rgba(124,58,237,.06)}
+.ticket-id{font-size:13px;font-weight:600;color:#7C3AED;width:70px;flex-shrink:0}
+.ticket-status{width:100px;flex-shrink:0}
+.ticket-status-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;text-align:center;display:inline-block}
+.status-new{background:#DBEAFE;color:#2563EB}
+.status-open{background:#FEF3C7;color:#D97706}
+.status-progress{background:#F3E8FF;color:#7C3AED}
+.status-resolved{background:#DCFCE7;color:#16A34A}
+.ticket-info{flex:1;min-width:0}
+.ticket-subject{font-size:14px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-excerpt{font-size:12px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-priority{width:80px;flex-shrink:0;text-align:center}
+.ticket-priority-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px}
+.priority-critical{background:#FEF2F2;color:#DC2626}
+.priority-high{background:#FFF7ED;color:#EA580C}
+.priority-medium{background:#FFFBEB;color:#CA8A04}
+.priority-low{background:#F0FDF4;color:#16A34A}
+.ticket-date{font-size:12px;color:#94A3B8;width:100px;flex-shrink:0;text-align:right}
+
+/* ── Ticket Detail Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:720px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.15)}
+.modal-header{padding:20px 24px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#64748B;padding:4px;transition:color .2s}
+.modal-close:hover{color:#1E293B}
+.modal-body{padding:24px}
+.thread-item{display:flex;gap:12px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #F1F5F9}
+.thread-item:last-child{border-bottom:none}
+.thread-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.thread-avatar.support{background:#F3E8FF;color:#7C3AED}
+.thread-avatar.client{background:#DBEAFE;color:#2563EB}
+.thread-avatar.system{background:#F1F5F9;color:#64748B}
+.thread-content{flex:1}
+.thread-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.thread-time{font-size:11px;color:#94A3B8;font-weight:400;margin-left:8px}
+.thread-text{font-size:13px;color:#475569;line-height:1.6}
+.thread-status-change{font-size:12px;color:#64748B;font-style:italic;display:flex;align-items:center;gap:6px}
+
+/* ── New Ticket Form ── */
+.form-card{background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:13px;font-weight:600;color:#475569}
+.form-input,.form-select,.form-textarea{padding:10px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:14px;font-family:inherit;color:#1E293B;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#7C3AED}
+.form-textarea{min-height:120px;resize:vertical}
+.form-attach{border:2px dashed #E2E8F0;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s}
+.form-attach:hover{border-color:#7C3AED}
+.form-btn{background:#7C3AED;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.form-btn:hover{background:#6D28D9}
+
+/* ── Escalation Matrix ── */
+.escalation{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.esc-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #E2E8F0;text-align:center;position:relative;overflow:hidden}
+.esc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.esc-card.critical::before{background:#DC2626}
+.esc-card.high::before{background:#EA580C}
+.esc-card.medium::before{background:#CA8A04}
+.esc-card.low::before{background:#16A34A}
+.esc-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.esc-card.critical .esc-label{color:#DC2626}
+.esc-card.high .esc-label{color:#EA580C}
+.esc-card.medium .esc-label{color:#CA8A04}
+.esc-card.low .esc-label{color:#16A34A}
+.esc-metric{margin-bottom:10px}
+.esc-metric-label{font-size:11px;color:#94A3B8;margin-bottom:2px}
+.esc-metric-value{font-size:18px;font-weight:700}
+
+/* ── Knowledge Base ── */
+.kb-search{margin-bottom:20px;position:relative}
+.kb-search input{width:100%;padding:12px 16px 12px 44px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+.kb-search input:focus{border-color:#7C3AED}
+.kb-search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%)}
+.kb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.kb-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #E2E8F0;cursor:pointer;transition:all .2s}
+.kb-card:hover{border-color:#7C3AED;box-shadow:0 4px 12px rgba(124,58,237,.06)}
+.kb-card-icon{font-size:20px;margin-bottom:8px}
+.kb-card-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.kb-card-desc{font-size:12px;color:#64748B;line-height:1.4}
+.kb-card-articles{font-size:11px;color:#7C3AED;margin-top:8px;font-weight:500}
+
+/* ── Calendar ── */
+.maint-calendar{background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0}
+.cal-month{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cal-month h3{font-size:16px;font-weight:600}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-day-header{font-size:12px;font-weight:600;color:#94A3B8;padding:8px}
+.cal-day{padding:10px 4px;border-radius:8px;font-size:13px;color:#64748B;cursor:default;transition:background .2s}
+.cal-day.today{background:#F3E8FF;color:#7C3AED;font-weight:600}
+.cal-day.event{background:#FEF3C7;color:#D97706;font-weight:600;cursor:pointer;position:relative}
+.cal-day.event::after{content:'';width:6px;height:6px;background:#D97706;border-radius:50%;position:absolute;bottom:4px;left:50%;transform:translateX(-50%)}
+.cal-day.empty{visibility:hidden}
+
+.watermark{text-align:center;padding:24px;font-size:11px;color:#94A3B8}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">SP</div>
+    <div class="header-title">
+      <h1>Portal de Soporte</h1>
+      <p>Cadena Dental Sonrisa - 12 clinicas</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-chat" onclick="alert('Conectando con soporte en vivo...')">
+      <span class="sla-dot"></span> Soporte en linea
+    </div>
+    <div class="sla-badge"><span class="sla-dot"></span> SLA: Cumpliendo</div>
+    <div class="plan-badge">PRIORITY</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard',this)">Dashboard SLA</button>
+  <button class="tab" onclick="switchTab('tickets',this)">Tickets</button>
+  <button class="tab" onclick="switchTab('newticket',this)">Nuevo ticket</button>
+  <button class="tab" onclick="switchTab('kb',this)">Base de conocimiento</button>
+  <button class="tab" onclick="switchTab('calendar',this)">Calendario</button>
+</div>
+
+<div class="container">
+
+  <!-- ── SLA Dashboard ── -->
+  <div class="section active" id="sec-dashboard">
+    <div class="sla-grid">
+      <div class="sla-card">
+        <div class="sla-card-label">Tiempo respuesta promedio</div>
+        <div class="sla-card-value" style="color:#16A34A">18 min</div>
+        <div class="sla-card-target">Objetivo: &lt; 30 min</div>
+        <div class="sla-card-bar"><div class="sla-card-fill" style="width:60%;background:#16A34A"></div></div>
+      </div>
+      <div class="sla-card">
+        <div class="sla-card-label">Tiempo resolucion promedio</div>
+        <div class="sla-card-value" style="color:#2563EB">3.2h</div>
+        <div class="sla-card-target">Objetivo: &lt; 4h (critico)</div>
+        <div class="sla-card-bar"><div class="sla-card-fill" style="width:80%;background:#2563EB"></div></div>
+      </div>
+      <div class="sla-card">
+        <div class="sla-card-label">Tickets resueltos (mes)</div>
+        <div class="sla-card-value">24/26</div>
+        <div class="sla-card-target">92% tasa resolucion</div>
+        <div class="sla-card-bar"><div class="sla-card-fill" style="width:92%;background:#7C3AED"></div></div>
+      </div>
+      <div class="sla-card">
+        <div class="sla-card-label">Satisfaccion cliente</div>
+        <div class="sla-card-value" style="color:#16A34A">4.8/5</div>
+        <div class="sla-card-target">Basado en 24 encuestas</div>
+        <div class="sla-card-bar"><div class="sla-card-fill" style="width:96%;background:#16A34A"></div></div>
+      </div>
+    </div>
+
+    <!-- Escalation Matrix -->
+    <div style="margin-bottom:16px"><div style="font-size:16px;font-weight:700">Matriz de escalacion</div></div>
+    <div class="escalation">
+      <div class="esc-card critical">
+        <div class="esc-label">Critico</div>
+        <div class="esc-metric"><div class="esc-metric-label">Primera respuesta</div><div class="esc-metric-value">15 min</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Resolucion</div><div class="esc-metric-value">4 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Escalacion</div><div class="esc-metric-value">30 min</div></div>
+        <div style="font-size:11px;color:#64748B;margin-top:8px">Sitio caido, brecha seguridad, perdida datos</div>
+      </div>
+      <div class="esc-card high">
+        <div class="esc-label">Alto</div>
+        <div class="esc-metric"><div class="esc-metric-label">Primera respuesta</div><div class="esc-metric-value">30 min</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Resolucion</div><div class="esc-metric-value">8 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Escalacion</div><div class="esc-metric-value">2 horas</div></div>
+        <div style="font-size:11px;color:#64748B;margin-top:8px">Funcionalidad rota, errores pagos, formularios</div>
+      </div>
+      <div class="esc-card medium">
+        <div class="esc-label">Medio</div>
+        <div class="esc-metric"><div class="esc-metric-label">Primera respuesta</div><div class="esc-metric-value">2 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Resolucion</div><div class="esc-metric-value">24 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Escalacion</div><div class="esc-metric-value">8 horas</div></div>
+        <div style="font-size:11px;color:#64748B;margin-top:8px">Errores visuales, rendimiento lento, bugs menores</div>
+      </div>
+      <div class="esc-card low">
+        <div class="esc-label">Bajo</div>
+        <div class="esc-metric"><div class="esc-metric-label">Primera respuesta</div><div class="esc-metric-value">4 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Resolucion</div><div class="esc-metric-value">48 horas</div></div>
+        <div class="esc-metric"><div class="esc-metric-label">Escalacion</div><div class="esc-metric-value">24 horas</div></div>
+        <div style="font-size:11px;color:#64748B;margin-top:8px">Mejoras, preguntas, cambios menores</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tickets ── -->
+  <div class="section" id="sec-tickets">
+    <div class="tickets-header">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="tickets-title">Tickets de soporte</div>
+        <div class="ticket-filters">
+          <button class="ticket-filter active" onclick="filterTickets('all',this)">Todos (8)</button>
+          <button class="ticket-filter" onclick="filterTickets('open',this)">Abiertos (3)</button>
+          <button class="ticket-filter" onclick="filterTickets('progress',this)">En progreso (2)</button>
+          <button class="ticket-filter" onclick="filterTickets('resolved',this)">Resueltos (3)</button>
+        </div>
+      </div>
+      <button class="new-ticket-btn" onclick="switchTab('newticket',document.querySelectorAll('.tab')[2])">+ Nuevo ticket</button>
+    </div>
+    <div class="ticket-list">
+      <div class="ticket-row" onclick="openTicket('TK-089')">
+        <div class="ticket-id">TK-089</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-progress">En progreso</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Error en formulario de citas - clinica Chamberi</div>
+          <div class="ticket-excerpt">El formulario de reserva no envia confirmacion por email desde ayer por la tarde.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-high">Alto</span></div>
+        <div class="ticket-date">19 feb 09:30</div>
+      </div>
+      <div class="ticket-row" onclick="openTicket('TK-088')">
+        <div class="ticket-id">TK-088</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-open">Abierto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Actualizar horarios clinica Retiro</div>
+          <div class="ticket-excerpt">Nuevo horario de verano: L-V 8:00-21:00, S 9:00-14:00.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-medium">Medio</span></div>
+        <div class="ticket-date">18 feb 16:45</div>
+      </div>
+      <div class="ticket-row" onclick="openTicket('TK-087')">
+        <div class="ticket-id">TK-087</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-open">Abierto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Anadir nueva doctora al equipo</div>
+          <div class="ticket-excerpt">Dra. Elena Vidal, especialista en ortodoncia. Adjunto foto y bio.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-low">Bajo</span></div>
+        <div class="ticket-date">18 feb 11:20</div>
+      </div>
+      <div class="ticket-row" onclick="openTicket('TK-086')">
+        <div class="ticket-id">TK-086</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-progress">En progreso</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Rendimiento lento pagina de servicios</div>
+          <div class="ticket-excerpt">La pagina tarda +4s en cargar. Posible problema con imagenes.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-medium">Medio</span></div>
+        <div class="ticket-date">17 feb 10:00</div>
+      </div>
+      <div class="ticket-row" onclick="openTicket('TK-085')">
+        <div class="ticket-id">TK-085</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-open">Abierto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Solicitud nueva landing promocion blanqueamiento</div>
+          <div class="ticket-excerpt">Necesitamos landing page para campana de blanqueamiento dental en primavera.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-low">Bajo</span></div>
+        <div class="ticket-date">16 feb 14:30</div>
+      </div>
+      <div class="ticket-row" style="opacity:.6">
+        <div class="ticket-id">TK-084</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-resolved">Resuelto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">SSL expirado clinica Salamanca</div>
+          <div class="ticket-excerpt">Renovacion automatica fallo. Certificado renovado manualmente.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-critical">Critico</span></div>
+        <div class="ticket-date">15 feb 08:15</div>
+      </div>
+      <div class="ticket-row" style="opacity:.6">
+        <div class="ticket-id">TK-083</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-resolved">Resuelto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Correccion texto pagina "Sobre nosotros"</div>
+          <div class="ticket-excerpt">Erratas detectadas en la descripcion del equipo medico.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-low">Bajo</span></div>
+        <div class="ticket-date">14 feb 12:00</div>
+      </div>
+      <div class="ticket-row" style="opacity:.6">
+        <div class="ticket-id">TK-082</div>
+        <div class="ticket-status"><span class="ticket-status-badge status-resolved">Resuelto</span></div>
+        <div class="ticket-info">
+          <div class="ticket-subject">Backup restaurado correctamente</div>
+          <div class="ticket-excerpt">Restauracion de backup pre-actualizacion completada sin incidencias.</div>
+        </div>
+        <div class="ticket-priority"><span class="ticket-priority-badge priority-high">Alto</span></div>
+        <div class="ticket-date">13 feb 09:45</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── New Ticket ── -->
+  <div class="section" id="sec-newticket">
+    <div class="form-card">
+      <div style="font-size:18px;font-weight:700;margin-bottom:20px">Crear nuevo ticket</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Asunto</label>
+          <input class="form-input" type="text" placeholder="Describe brevemente el problema">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Clinica afectada</label>
+          <select class="form-select">
+            <option>Todas las clinicas</option>
+            <option>Clinica Chamberi</option>
+            <option>Clinica Retiro</option>
+            <option>Clinica Salamanca</option>
+            <option>Clinica Moncloa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select class="form-select">
+            <option>Error / Bug</option>
+            <option>Actualizacion de contenido</option>
+            <option>Rendimiento</option>
+            <option>Seguridad</option>
+            <option>Nueva funcionalidad</option>
+            <option>Pregunta / Consulta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select">
+            <option>Baja - Puede esperar</option>
+            <option selected>Media - Importante</option>
+            <option>Alta - Urgente</option>
+            <option>Critica - Sitio caido / Emergencia</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Descripcion detallada</label>
+        <textarea class="form-textarea" placeholder="Describe el problema en detalle: que ocurre, cuando empezo, pasos para reproducirlo, que esperabas que pasara..."></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="form-label">Adjuntos (capturas, documentos)</label>
+        <div class="form-attach" onclick="alert('Selector de archivos')">
+          <div style="margin-bottom:8px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+          <div style="font-size:13px;color:#64748B">Arrastra archivos o haz clic para seleccionar</div>
+          <div style="font-size:11px;color:#94A3B8;margin-top:4px">PNG, JPG, PDF, MP4 hasta 25MB</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;color:#64748B">Tiempo de respuesta estimado: <strong style="color:#7C3AED">30 minutos</strong> (segun prioridad)</div>
+        <button class="form-btn" onclick="alert('Ticket creado exitosamente! ID: TK-090. Recibirás confirmación por email.')">Crear ticket</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Knowledge Base ── -->
+  <div class="section" id="sec-kb">
+    <div class="kb-search">
+      <svg class="kb-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="Buscar en la base de conocimiento...">
+    </div>
+    <div class="kb-grid">
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <div class="kb-card-title">Mantenimiento y actualizaciones</div>
+        <div class="kb-card-desc">Informacion sobre el mantenimiento programado, actualizaciones de seguridad y procedimientos.</div>
+        <div class="kb-card-articles">8 articulos</div>
+      </div>
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
+        <div class="kb-card-title">Gestion de contenido</div>
+        <div class="kb-card-desc">Como solicitar cambios de contenido, formatos aceptados y mejores practicas.</div>
+        <div class="kb-card-articles">5 articulos</div>
+      </div>
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="kb-card-title">Seguridad y accesos</div>
+        <div class="kb-card-desc">Politica de seguridad, gestion de contrasenas, SSL y proteccion contra ataques.</div>
+        <div class="kb-card-articles">6 articulos</div>
+      </div>
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></div>
+        <div class="kb-card-title">Analiticas y SEO</div>
+        <div class="kb-card-desc">Como interpretar las metricas, informes mensuales y estrategia de posicionamiento.</div>
+        <div class="kb-card-articles">4 articulos</div>
+      </div>
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
+        <div class="kb-card-title">SLA y niveles de servicio</div>
+        <div class="kb-card-desc">Detalles de tu plan Priority: tiempos de respuesta, escalacion y garantias.</div>
+        <div class="kb-card-articles">3 articulos</div>
+      </div>
+      <div class="kb-card" onclick="alert('Abriendo articulo...')">
+        <div class="kb-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></div>
+        <div class="kb-card-title">Preguntas frecuentes</div>
+        <div class="kb-card-desc">Respuestas rapidas a las consultas mas habituales de nuestros clientes.</div>
+        <div class="kb-card-articles">12 articulos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Calendar ── -->
+  <div class="section" id="sec-calendar">
+    <div class="maint-calendar">
+      <div class="cal-month">
+        <h3>Mantenimiento programado - Febrero 2026</h3>
+        <div style="font-size:13px;color:#64748B">&#128308; = Mantenimiento programado</div>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-header">Lun</div><div class="cal-day-header">Mar</div><div class="cal-day-header">Mie</div>
+        <div class="cal-day-header">Jue</div><div class="cal-day-header">Vie</div><div class="cal-day-header">Sab</div>
+        <div class="cal-day-header">Dom</div>
+        <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+        <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+        <div class="cal-day">1</div>
+        <div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div>
+        <div class="cal-day event" onclick="alert('Mantenimiento: Actualizacion dependencias y parches de seguridad. 03:00-04:00 CET. Sin downtime esperado.')">5</div>
+        <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div>
+        <div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div>
+        <div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
+        <div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div>
+        <div class="cal-day event" onclick="alert('Mantenimiento: Actualizacion framework + optimizacion BD. 03:00-05:00 CET. Posible downtime: 15 min.')">19</div>
+        <div class="cal-day today">20</div><div class="cal-day">21</div><div class="cal-day">22</div>
+        <div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div>
+        <div class="cal-day event" onclick="alert('Mantenimiento: Revision mensual completa, backup extra, informe rendimiento. 03:00-04:30 CET.')">26</div>
+        <div class="cal-day">27</div><div class="cal-day">28</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="modal-overlay" id="ticketModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:16px;font-weight:700" id="modalTitle">TK-089: Error en formulario de citas</div>
+        <div style="font-size:12px;color:#64748B;margin-top:4px">Creado: 19 feb 2026, 09:30 | Prioridad: <span style="color:#EA580C;font-weight:600">Alta</span></div>
+      </div>
+      <button class="modal-close" onclick="closeTicket()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="thread-item">
+        <div class="thread-avatar client">CS</div>
+        <div class="thread-content">
+          <div class="thread-name">Carlos Sanchez <span class="thread-time">19 feb, 09:30</span></div>
+          <div class="thread-text">Buenos dias. El formulario de reserva de citas en la web de la clinica Chamberi no esta enviando los emails de confirmacion desde ayer por la tarde (aprox. 17:00). Los pacientes reservan pero no reciben confirmacion. Prioritario porque tenemos la agenda llena manana.</div>
+        </div>
+      </div>
+      <div class="thread-item">
+        <div class="thread-avatar system">&#9888;</div>
+        <div class="thread-content">
+          <div class="thread-status-change">&#128260; Estado cambiado a <strong style="margin:0 4px">En progreso</strong> <span class="thread-time">19 feb, 09:48</span></div>
+        </div>
+      </div>
+      <div class="thread-item">
+        <div class="thread-avatar support">GT</div>
+        <div class="thread-content">
+          <div class="thread-name">Equipo GT Dev <span class="thread-time">19 feb, 09:48</span></div>
+          <div class="thread-text">Buenos dias Carlos. Hemos recibido tu ticket y ya estamos investigando. Hemos detectado que el servicio SMTP de envio de emails tiene un problema de autenticacion. Estamos trabajando en la solucion. Tiempo estimado de resolucion: 1-2 horas. Te mantenemos informado.</div>
+        </div>
+      </div>
+      <div class="thread-item">
+        <div class="thread-avatar support">GT</div>
+        <div class="thread-content">
+          <div class="thread-name">Equipo GT Dev <span class="thread-time">19 feb, 10:35</span></div>
+          <div class="thread-text">Actualización: hemos identificado el problema. Las credenciales SMTP fueron rotadas automaticamente y necesitaban actualizarse. Ya estan actualizadas y hemos enviado una prueba exitosa. Estamos reenviando las confirmaciones pendientes (12 citas). En 15 minutos deberia estar todo normalizado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="watermark">Prototipo GT Dev Solutions</div>
+
+<script>
+function switchTab(id, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+id).classList.add('active');
+}
+
+function filterTickets(filter, btn){
+  document.querySelectorAll('.ticket-filter').forEach(f=>f.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function openTicket(id){
+  document.getElementById('ticketModal').classList.add('show');
+}
+
+function closeTicket(){
+  document.getElementById('ticketModal').classList.remove('show');
+}
+
+document.getElementById('ticketModal').addEventListener('click', function(e){
+  if(e.target === this) closeTicket();
+});
+</script>
+</body>
+</html>

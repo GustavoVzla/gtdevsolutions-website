@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Dev Solutions - Product Catalog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #FAFAFA; color: #1E293B; }
+
+        .header {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            color: white;
+            padding: 48px 24px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .header p { font-size: 1rem; color: #94A3B8; font-weight: 300; }
+        .header .badge {
+            display: inline-block;
+            background: #2563EB;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+        .category {
+            margin-bottom: 40px;
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .category-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+        .category-header h2 { font-size: 1.25rem; font-weight: 700; }
+        .category-header span { font-size: 0.875rem; color: #64748B; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #E2E8F0;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .card:hover {
+            border-color: #2563EB;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            transform: translateY(-2px);
+        }
+        .card-number {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .card h3 { font-size: 1rem; font-weight: 600; }
+        .card p { font-size: 0.8rem; color: #64748B; line-height: 1.5; }
+        .card-thumb {
+            width: 100%;
+            height: 140px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+        }
+        .card-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        .bg-blue { background: #EFF6FF; color: #2563EB; }
+        .bg-green { background: #F0FDF4; color: #16A34A; }
+        .bg-purple { background: #F5F3FF; color: #7C3AED; }
+        .bg-orange { background: #FFF7ED; color: #EA580C; }
+        .bg-rose { background: #FFF1F2; color: #E11D48; }
+        .bg-teal { background: #F0FDFA; color: #0D9488; }
+
+        .footer {
+            text-align: center;
+            padding: 32px 24px;
+            color: #94A3B8;
+            font-size: 0.8rem;
+            border-top: 1px solid #E2E8F0;
+            margin-top: 24px;
+        }
+        .footer a { color: #2563EB; text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .header h1 { font-size: 1.5rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>GT Dev Solutions</h1>
+        <p>Product Catalog &mdash; Interactive Prototypes</p>
+        <div class="badge">24 Products &bull; 6 Categories</div>
+    </div>
+
+    <div class="container">
+
+        <!-- Web Development -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+                <div>
+                    <h2>Web Development</h2>
+                    <span>5 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="01_web/01_landing_page_simple.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#01</span>
+                    <h3>Landing Page</h3>
+                    <p>Restaurant "La Terraza Madrid" &mdash; Hero, reservations, scroll animations</p>
+                    <span class="card-tag bg-blue">Starter</span>
+                </a>
+                <a class="card" href="01_web/02_website_corporativo.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#02</span>
+                    <h3>Corporate Website</h3>
+                    <p>"Meridian Consulting" &mdash; 5-section SPA, animated counters</p>
+                    <span class="card-tag bg-blue">Starter</span>
+                </a>
+                <a class="card" href="01_web/03_website_react_nextjs.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#03</span>
+                    <h3>React/Next.js SaaS</h3>
+                    <p>"DataFlow Pro" &mdash; Login, dashboard, dark/light mode</p>
+                    <span class="card-tag bg-blue">Pro</span>
+                </a>
+                <a class="card" href="01_web/04_ecommerce_basico.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#04</span>
+                    <h3>Basic E-commerce</h3>
+                    <p>"Urban Style" fashion &mdash; 8 products, filters, cart</p>
+                    <span class="card-tag bg-blue">Pro</span>
+                </a>
+                <a class="card" href="01_web/05_ecommerce_completo.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#05</span>
+                    <h3>Full E-commerce</h3>
+                    <p>"TechNova" electronics &mdash; 10 products, wishlist, admin, loyalty</p>
+                    <span class="card-tag bg-blue">Premium</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Mobile Apps -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
+                <div>
+                    <h2>Mobile Apps</h2>
+                    <span>4 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="02_apps/06_app_movil_simple.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#06</span>
+                    <h3>Simple App</h3>
+                    <p>"Clinica Dental Sonrisa" &mdash; Phone frame, 4 screens</p>
+                    <span class="card-tag bg-green">Pro</span>
+                </a>
+                <a class="card" href="02_apps/07_app_movil_media.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#07</span>
+                    <h3>Medium App</h3>
+                    <p>"Sabor Latino" restaurant &mdash; 5 screens, menu, reservations, loyalty</p>
+                    <span class="card-tag bg-green">Pro</span>
+                </a>
+                <a class="card" href="02_apps/08_app_movil_compleja.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#08</span>
+                    <h3>Complex App</h3>
+                    <p>"WorkHub Madrid" coworking &mdash; 7 screens, calendar, community</p>
+                    <span class="card-tag bg-green">Premium</span>
+                </a>
+                <a class="card" href="02_apps/09_app_ios_android.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#09</span>
+                    <h3>iOS + Android</h3>
+                    <p>"VitalFit" fitness &mdash; Dual phone, synchronized</p>
+                    <span class="card-tag bg-green">Premium</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Custom Software -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></div>
+                <div>
+                    <h2>Custom Software</h2>
+                    <span>4 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="03_software/10_crm_simple.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#10</span>
+                    <h3>Simple CRM</h3>
+                    <p>Pipeline funnel, Kanban board, contacts</p>
+                    <span class="card-tag bg-purple">Pro</span>
+                </a>
+                <a class="card" href="03_software/11_dashboard_analytics.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#11</span>
+                    <h3>Analytics Dashboard</h3>
+                    <p>SVG charts, donut, dark mode, export</p>
+                    <span class="card-tag bg-purple">Pro</span>
+                </a>
+                <a class="card" href="03_software/12_sistema_gestion.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#12</span>
+                    <h3>Management System</h3>
+                    <p>"LogiStore" warehouse &mdash; Stock alerts, occupancy grid</p>
+                    <span class="card-tag bg-purple">Premium</span>
+                </a>
+                <a class="card" href="03_software/13_software_a_medida.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#13</span>
+                    <h3>Custom Software</h3>
+                    <p>"PropTech Manager" &mdash; Occupancy, maintenance tickets</p>
+                    <span class="card-tag bg-purple">Enterprise</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Automations -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+                <div>
+                    <h2>n8n Automations</h2>
+                    <span>4 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="04_automatizaciones/14_workflow_simple.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#14</span>
+                    <h3>Simple Workflow</h3>
+                    <p>3-node flow, animated dots, execution log</p>
+                    <span class="card-tag bg-orange">Starter</span>
+                </a>
+                <a class="card" href="04_automatizaciones/15_workflow_medio.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#15</span>
+                    <h3>Medium Workflow</h3>
+                    <p>8-node branching flow, IF/ELSE, lead timeline</p>
+                    <span class="card-tag bg-orange">Pro</span>
+                </a>
+                <a class="card" href="04_automatizaciones/16_ai_agent_chatbot.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#16</span>
+                    <h3>AI Agent / Chatbot</h3>
+                    <p>Workflow canvas + live chat + intent detection</p>
+                    <span class="card-tag bg-orange">Premium</span>
+                </a>
+                <a class="card" href="04_automatizaciones/17_multi_wf_package.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#17</span>
+                    <h3>Multi-WF Package</h3>
+                    <p>5 workflows, ecosystem view, ROI 12.4x</p>
+                    <span class="card-tag bg-orange">Enterprise</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- AI & Chatbots -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-rose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+                <div>
+                    <h2>AI & Chatbots</h2>
+                    <span>3 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="05_ia_chatbots/18_chatbot_web_basico.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#18</span>
+                    <h3>Web Chatbot</h3>
+                    <p>"SegurPlus" insurance &mdash; Floating widget, quick replies</p>
+                    <span class="card-tag bg-rose">Pro</span>
+                </a>
+                <a class="card" href="05_ia_chatbots/19_chatbot_whatsapp.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#19</span>
+                    <h3>WhatsApp Chatbot</h3>
+                    <p>"Glamour Studio" beauty &mdash; WhatsApp UI, dark mode, calendar</p>
+                    <span class="card-tag bg-rose">Premium</span>
+                </a>
+                <a class="card" href="05_ia_chatbots/20_ai_advanced_assistant.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#20</span>
+                    <h3>AI Advanced Assistant</h3>
+                    <p>"LexIA Pro" legal &mdash; ChatGPT-style, jurisprudence cards</p>
+                    <span class="card-tag bg-rose">Enterprise</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Retainers & Support -->
+        <div class="category">
+            <div class="category-header">
+                <div class="category-icon bg-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <div>
+                    <h2>Retainers & Support</h2>
+                    <span>4 products</span>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="card" href="06_retainers/21_mantenimiento_basico.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#21</span>
+                    <h3>Basic Maintenance</h3>
+                    <p>Status dashboard &mdash; Uptime, SSL, backups, monthly report</p>
+                    <span class="card-tag bg-teal">Starter</span>
+                </a>
+                <a class="card" href="06_retainers/22_mantenimiento_updates.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#22</span>
+                    <h3>Maintenance + Updates</h3>
+                    <p>5-tab dashboard &mdash; Overview, content, analytics, change requests</p>
+                    <span class="card-tag bg-teal">Pro</span>
+                </a>
+                <a class="card" href="06_retainers/23_soporte_priority.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#23</span>
+                    <h3>Priority Support</h3>
+                    <p>SLA dashboard &mdash; Escalation matrix, tickets, knowledge base</p>
+                    <span class="card-tag bg-teal">Premium</span>
+                </a>
+                <a class="card" href="06_retainers/24_retainer_desarrollo.html">
+                    <div class="card-thumb" style="background-image:url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=200&fit=crop&q=80')"></div>
+                    <span class="card-number">#24</span>
+                    <h3>Dev Retainer</h3>
+                    <p>Sprint board Kanban &mdash; 9 tabs, hours tracker, roadmap</p>
+                    <span class="card-tag bg-teal">Enterprise</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>GT Dev Solutions &mdash; <a href="https://gtdevsolutions.com">gtdevsolutions.com</a></p>
+        <p style="margin-top: 4px;">Interactive prototypes for demonstration purposes</p>
+    </div>
+</body>
+</html>

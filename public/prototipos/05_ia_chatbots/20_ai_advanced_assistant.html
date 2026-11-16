@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Advanced Assistant - Bufete Martinez | Prototipo GT Dev Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F8FAFC;--sidebar:#FFFFFF;--chat-bg:#F1F5F9;--text:#1E293B;--text-secondary:#64748B;--border:#E2E8F0;--primary:#2563EB;--primary-light:#EFF6FF;--card:#FFFFFF;--input-bg:#FFFFFF;--code-bg:#F1F5F9;--hover:#F8FAFC}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+body.dark{--bg:#0F172A;--sidebar:#1E293B;--chat-bg:#0F172A;--text:#E2E8F0;--text-secondary:#94A3B8;--border:#334155;--primary:#3B82F6;--primary-light:rgba(59,130,246,.1);--card:#1E293B;--input-bg:#1E293B;--code-bg:#334155;--hover:#334155}
+
+.app{display:flex;height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{width:300px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:background .3s}
+.sidebar-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-logo{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sidebar-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#2563EB,#7C3AED);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.new-chat-btn{background:var(--primary);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px}
+.new-chat-btn:hover{opacity:.9}
+
+.sidebar-search{padding:12px 16px}
+.sidebar-search input{width:100%;background:var(--hover);border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 36px;font-size:13px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s}
+.sidebar-search input:focus{border-color:var(--primary)}
+.sidebar-search{position:relative}
+.sidebar-search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);opacity:.5;display:flex;align-items:center}
+
+.sidebar-section{padding:8px 12px}
+.sidebar-section-title{font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;margin-bottom:4px}
+.chat-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .2s;margin-bottom:2px}
+.chat-item:hover{background:var(--hover)}
+.chat-item.active{background:var(--primary-light)}
+.chat-item-icon{font-size:16px;opacity:.6;flex-shrink:0}
+.chat-item-text{flex:1;min-width:0}
+.chat-item-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-item-date{font-size:11px;color:var(--text-secondary)}
+
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border)}
+.usage-meter{margin-bottom:8px}
+.usage-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.usage-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.usage-fill{height:100%;background:linear-gradient(90deg,#2563EB,#7C3AED);border-radius:2px;width:65%}
+
+/* ── Main Chat ── */
+.main{flex:1;display:flex;flex-direction:column;background:var(--chat-bg);transition:background .3s}
+
+.main-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
+.main-header-left{display:flex;align-items:center;gap:12px}
+.model-select{background:var(--hover);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--text);font-family:inherit;cursor:pointer;outline:none}
+.main-header-right{display:flex;align-items:center;gap:12px}
+.header-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--text-secondary);cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px}
+.header-btn:hover{background:var(--hover);color:var(--text)}
+.toggle-theme{background:none;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.toggle-theme:hover{background:var(--hover)}
+
+/* Messages */
+.messages{flex:1;overflow-y:auto;padding:24px 0}
+.messages::-webkit-scrollbar{width:6px}
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.message{padding:20px 24px;max-width:860px;margin:0 auto;width:100%;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.message-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.message-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0}
+.msg-ai .message-avatar{background:linear-gradient(135deg,#2563EB,#7C3AED);color:#fff}
+.msg-human .message-avatar{background:var(--border);color:var(--text)}
+.message-name{font-size:14px;font-weight:600}
+.message-body{padding-left:42px;font-size:14px;line-height:1.7;color:var(--text)}
+.message-body p{margin-bottom:12px}
+.message-body strong{color:var(--text);font-weight:600}
+.message-body ul,.message-body ol{margin:8px 0 12px 20px}
+.message-body li{margin-bottom:6px}
+
+/* Legal highlight */
+.legal-term{background:var(--primary-light);color:var(--primary);padding:2px 6px;border-radius:4px;font-weight:500;font-size:13px}
+
+/* Source citation */
+.source-citation{display:inline-flex;align-items:center;gap:4px;background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;cursor:pointer;margin:0 2px;transition:background .2s}
+.source-citation:hover{background:rgba(37,99,235,.15)}
+
+/* Case reference card */
+.case-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0;transition:all .2s}
+.case-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,.08)}
+.case-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.case-card-title{font-size:14px;font-weight:600;color:var(--primary)}
+.case-card-confidence{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px}
+.confidence-high{background:#DCFCE7;color:#16A34A}
+.confidence-medium{background:#FEF9C3;color:#CA8A04}
+body.dark .confidence-high{background:rgba(22,163,74,.15);color:#4ADE80}
+body.dark .confidence-medium{background:rgba(202,138,4,.15);color:#FACC15}
+.case-card-body{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.case-card-footer{display:flex;gap:8px;margin-top:10px}
+.case-tag{font-size:11px;background:var(--hover);color:var(--text-secondary);padding:3px 8px;border-radius:4px}
+
+/* Document analysis */
+.doc-analysis{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0}
+.doc-analysis-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.doc-icon{width:40px;height:40px;background:#FEF2F2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
+body.dark .doc-icon{background:rgba(239,68,68,.1)}
+.doc-name{font-size:14px;font-weight:600}
+.doc-meta{font-size:12px;color:var(--text-secondary)}
+.doc-summary{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.doc-highlight{border-left:3px solid var(--primary);padding-left:12px;margin:10px 0;font-size:13px;color:var(--text);line-height:1.6}
+
+/* Action buttons */
+.action-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0 42px}
+.action-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:all .2s;background:var(--card);font-family:inherit}
+.action-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.action-btn-icon{font-size:16px}
+
+/* Typing indicator */
+.ai-typing{padding:20px 24px;max-width:860px;margin:0 auto;width:100%;display:flex;align-items:center;gap:10px}
+.ai-typing .message-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.typing-dots{display:flex;gap:4px}
+.typing-dots span{width:8px;height:8px;background:var(--text-secondary);border-radius:50%;animation:ai-type .8s infinite;opacity:.5}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes ai-type{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+/* Input area */
+.input-area{padding:16px 24px;background:var(--card);border-top:1px solid var(--border);transition:background .3s}
+.input-wrapper{max-width:860px;margin:0 auto;position:relative}
+.input-field{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:14px 52px 14px 16px;font-size:14px;color:var(--text);font-family:inherit;outline:none;resize:none;transition:border-color .2s;min-height:52px}
+.input-field:focus{border-color:var(--primary)}
+.input-field::placeholder{color:var(--text-secondary)}
+.input-send{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;background:var(--primary);border:none;border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.input-send:hover{opacity:.9}
+.input-send svg{width:16px;height:16px;fill:#fff}
+.input-hint{font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px}
+
+.watermark{position:fixed;bottom:8px;left:316px;font-size:11px;color:var(--text-secondary);z-index:10}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+        LexIA Pro
+      </div>
+      <button class="new-chat-btn" onclick="location.reload()">+ Nueva</button>
+    </div>
+    <div class="sidebar-search">
+      <span class="sidebar-search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+      <input type="text" placeholder="Buscar conversaciones...">
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Hoy</div>
+      <div class="chat-item active">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Problema contrato alquiler</div>
+          <div class="chat-item-date">Hace 5 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Ayer</div>
+      <div class="chat-item" onclick="showToast('Conversacion anterior')">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Despido improcedente - Maria L.</div>
+          <div class="chat-item-date">18 feb 2026</div>
+        </div>
+      </div>
+      <div class="chat-item" onclick="showToast('Conversacion anterior')">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Constitucion SL - Garcia & Hijos</div>
+          <div class="chat-item-date">18 feb 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Ultima semana</div>
+      <div class="chat-item" onclick="showToast('Conversacion anterior')">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Reclamacion seguro vehiculo</div>
+          <div class="chat-item-date">14 feb 2026</div>
+        </div>
+      </div>
+      <div class="chat-item" onclick="showToast('Conversacion anterior')">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Herencia testamento abierto</div>
+          <div class="chat-item-date">12 feb 2026</div>
+        </div>
+      </div>
+      <div class="chat-item" onclick="showToast('Conversacion anterior')">
+        <span class="chat-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Clausulas abusivas hipoteca</div>
+          <div class="chat-item-date">10 feb 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="usage-meter">
+        <div class="usage-label"><span>Uso mensual</span><span>650 / 1000 consultas</span></div>
+        <div class="usage-bar"><div class="usage-fill"></div></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary)">Bufete Martinez &amp; Asociados</div>
+    </div>
+  </div>
+
+  <!-- ── Main Chat ── -->
+  <div class="main">
+    <div class="main-header">
+      <div class="main-header-left">
+        <select class="model-select" onchange="showToast('Modelo cambiado')">
+          <option>LexIA Pro v3.2</option>
+          <option>LexIA Basico v3.2</option>
+          <option>LexIA Rapido v3.2</option>
+        </select>
+        <span style="font-size:12px;color:var(--text-secondary)">Especializado en Derecho Espanol</span>
+      </div>
+      <div class="main-header-right">
+        <button class="header-btn" onclick="showToast('Exportando conversacion...')">
+          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span> Exportar
+        </button>
+        <button class="header-btn" onclick="showToast('Compartiendo...')">
+          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Compartir
+        </button>
+        <button class="toggle-theme" onclick="toggleTheme()" id="themeBtn" title="Cambiar tema"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+      <!-- Message 1: User -->
+      <div class="message msg-human">
+        <div class="message-header">
+          <div class="message-avatar">JR</div>
+          <div class="message-name">Juan Rodriguez</div>
+        </div>
+        <div class="message-body">
+          <p>Tengo un problema con mi contrato de alquiler. El propietario quiere subirme la renta un 15% y me ha dado solo 15 dias para aceptar o irme. El contrato se firmo hace 2 anos. Que puedo hacer?</p>
+        </div>
+      </div>
+
+      <!-- Message 2: AI Response -->
+      <div class="message msg-ai">
+        <div class="message-header">
+          <div class="message-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+          <div class="message-name">LexIA Pro</div>
+        </div>
+        <div class="message-body">
+          <p>Entiendo su situacion, Juan. Le explico sus derechos y opciones legales:</p>
+
+          <p><strong>1. Sobre la subida del 15%</strong></p>
+          <p>Segun la <span class="legal-term">Ley de Arrendamientos Urbanos (LAU)</span>, art. 18, durante la vigencia del contrato las actualizaciones de renta solo pueden realizarse aplicando el indice de referencia pactado. Desde la reforma de 2024, el limite maximo es el <span class="legal-term">Indice de Referencia de Arrendamientos</span> publicado por el INE. <span class="source-citation" onclick="showToast('Fuente: LAU Art. 18')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>LAU Art. 18</span></p>
+
+          <p><strong>2. Sobre el plazo de 15 dias</strong></p>
+          <p>El propietario <strong>no puede exigir la salida con 15 dias de preaviso</strong>. Si su contrato tiene menos de 5 anos (o 7 si el arrendador es persona juridica), usted tiene derecho a prorrogas anuales obligatorias. <span class="source-citation" onclick="showToast('Fuente: LAU Art. 9')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>LAU Art. 9</span></p>
+
+          <p><strong>3. Sus opciones:</strong></p>
+          <ul>
+            <li><strong>Rechazar la subida</strong> por escrito, citando el art. 18 de la LAU</li>
+            <li><strong>Negociar</strong> una subida dentro de los limites legales (actualmente ~3.2%)</li>
+            <li>Si insiste, <strong>interponer demanda</strong> por vulneracion de derechos del arrendatario</li>
+          </ul>
+
+          <div class="doc-analysis">
+            <div class="doc-analysis-header">
+              <div class="doc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
+              <div>
+                <div class="doc-name">Analisis de su situacion</div>
+                <div class="doc-meta">Basado en la informacion proporcionada</div>
+              </div>
+            </div>
+            <div class="doc-highlight">
+              <strong>Resumen:</strong> La subida del 15% es <strong>ilegal</strong> bajo la normativa vigente. El plazo de 15 dias <strong>no tiene efecto juridico</strong> si el contrato esta dentro del periodo de prorroga obligatoria.
+            </div>
+          </div>
+
+          <p><strong>Jurisprudencia relevante:</strong></p>
+
+          <div class="case-card">
+            <div class="case-card-header">
+              <div class="case-card-title">SAP Madrid 456/2024</div>
+              <span class="case-card-confidence confidence-high">95% relevante</span>
+            </div>
+            <div class="case-card-body">Sentencia de la Audiencia Provincial de Madrid que declaro nula una subida de renta del 12% por exceder el indice de referencia. Condeno al arrendador a devolver las cantidades cobradas en exceso mas intereses.</div>
+            <div class="case-card-footer">
+              <span class="case-tag">Arrendamiento</span>
+              <span class="case-tag">Subida ilegal</span>
+              <span class="case-tag">2024</span>
+            </div>
+          </div>
+
+          <div class="case-card">
+            <div class="case-card-header">
+              <div class="case-card-title">STS 892/2023</div>
+              <span class="case-card-confidence confidence-high">91% relevante</span>
+            </div>
+            <div class="case-card-body">El Tribunal Supremo ratifico que las prorrogas obligatorias del art. 9 LAU prevalecen sobre cualquier clausula contractual que intente limitar la duracion del arrendamiento a menos de 5 anos.</div>
+            <div class="case-card-footer">
+              <span class="case-tag">Prorroga obligatoria</span>
+              <span class="case-tag">LAU</span>
+              <span class="case-tag">2023</span>
+            </div>
+          </div>
+
+          <div class="case-card">
+            <div class="case-card-header">
+              <div class="case-card-title">SAP Barcelona 231/2024</div>
+              <span class="case-card-confidence confidence-medium">78% relevante</span>
+            </div>
+            <div class="case-card-body">Caso similar donde se estimo la demanda del inquilino por intimidacion del arrendador. Se reconocio indemnizacion adicional por danos morales al haber sido amenazado con desahucio sin causa legal.</div>
+            <div class="case-card-footer">
+              <span class="case-tag">Intimidacion</span>
+              <span class="case-tag">Indemnizacion</span>
+              <span class="case-tag">2024</span>
+            </div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="action-btn" onclick="showToast('Generando documento...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span> Generar documento</button>
+          <button class="action-btn" onclick="showToast('Abriendo agenda...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span> Agendar consulta</button>
+          <button class="action-btn" onclick="showToast('Buscando jurisprudencia...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Buscar jurisprudencia</button>
+        </div>
+      </div>
+
+      <!-- Message 3: User follow-up -->
+      <div class="message msg-human">
+        <div class="message-header">
+          <div class="message-avatar">JR</div>
+          <div class="message-name">Juan Rodriguez</div>
+        </div>
+        <div class="message-body">
+          <p>Que dice la ley exactamente sobre el limite de subida? Y si el propietario me amenaza con no renovar?</p>
+        </div>
+      </div>
+
+      <!-- Message 4: AI detailed response -->
+      <div class="message msg-ai">
+        <div class="message-header">
+          <div class="message-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+          <div class="message-name">LexIA Pro</div>
+        </div>
+        <div class="message-body">
+          <p>Buena pregunta, Juan. Veamos los dos puntos en detalle:</p>
+
+          <p><strong>Limite legal de actualizacion de renta</strong></p>
+          <p>El <span class="legal-term">Art. 18 LAU</span> (modificado por RDL 7/2023) establece:</p>
+          <div class="doc-analysis" style="margin:12px 0">
+            <div class="doc-highlight" style="border-left-color:#16A34A">
+              <strong>Art. 18.1 LAU:</strong> "Durante la vigencia del contrato, la renta solo podra ser actualizada por el arrendador o el arrendatario en la fecha en que se cumpla cada ano de vigencia del contrato, aplicando la variacion porcentual experimentada por el <strong>Indice de Referencia para la Actualizacion Anual de los Contratos de Arrendamiento de Vivienda</strong>."
+            </div>
+          </div>
+          <p>En la practica, esto significa que <strong>la subida maxima permitida en 2026 se situa en torno al 2.5-3.5%</strong>, muy lejos del 15% que le piden. <span class="source-citation" onclick="showToast('Fuente: INE - Indice referencia')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>INE 2026</span></p>
+
+          <p><strong>Sobre la no renovacion</strong></p>
+          <p>El propietario <strong>no puede negarse a renovar</strong> mientras usted este dentro del periodo de prorroga obligatoria (5 anos para persona fisica). Solo puede oponerse a la prorroga si: <span class="source-citation" onclick="showToast('Fuente: LAU Art. 9.3')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>LAU Art. 9.3</span></p>
+          <ul>
+            <li>Necesita la vivienda para si mismo, familiares de primer grado o conyuge tras sentencia de divorcio</li>
+            <li>Lo comunica con <strong>al menos 2 meses de antelacion</strong></li>
+            <li>Efectivamente la ocupa en el plazo de <strong>3 meses</strong></li>
+          </ul>
+
+          <p><strong>Recomendacion inmediata:</strong></p>
+          <ol>
+            <li>Envie un <strong>burofax</strong> al propietario comunicando que la subida es ilegal</li>
+            <li>Conserve toda la comunicacion (WhatsApps, emails, cartas)</li>
+            <li>Siga pagando la renta actual (importante: no deje de pagar)</li>
+          </ol>
+
+          <p>Quiere que le genere el modelo de burofax?</p>
+        </div>
+        <div class="action-buttons">
+          <button class="action-btn" onclick="handleBurofax()"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span> Generar burofax</button>
+          <button class="action-btn" onclick="showToast('Calculando plazos...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span> Ver plazos legales</button>
+          <button class="action-btn" onclick="showToast('Buscando mas...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Mas jurisprudencia</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea class="input-field" id="inputField" placeholder="Escribe tu consulta legal..." rows="1" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+        <button class="input-send" onclick="sendMsg()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">LexIA puede cometer errores. Verifique la informacion legal con un profesional.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);color:var(--text);padding:12px 24px;border-radius:10px;font-size:14px;opacity:0;transition:all .3s;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
+
+<div class="watermark">Prototipo GT Dev Solutions</div>
+
+<script>
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  const btn = document.getElementById('themeBtn');
+  btn.innerHTML = document.body.classList.contains('dark') ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(()=>{
+    t.style.opacity='0';
+    t.style.transform='translateX(-50%) translateY(20px)';
+  },2500);
+}
+
+function handleBurofax(){
+  const msgs = document.getElementById('messages');
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'message msg-human';
+  userMsg.innerHTML = `
+    <div class="message-header">
+      <div class="message-avatar">JR</div>
+      <div class="message-name">Juan Rodriguez</div>
+    </div>
+    <div class="message-body"><p>Si, genera el modelo de burofax por favor.</p></div>`;
+  msgs.appendChild(userMsg);
+
+  // Add typing
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.innerHTML = `<div class="message-avatar" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(()=>{
+    typing.remove();
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'message msg-ai';
+    aiMsg.innerHTML = `
+      <div class="message-header">
+        <div class="message-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+        <div class="message-name">LexIA Pro</div>
+      </div>
+      <div class="message-body">
+        <p>Aqui tiene el modelo de burofax listo para enviar:</p>
+        <div class="doc-analysis">
+          <div class="doc-analysis-header">
+            <div class="doc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
+            <div>
+              <div class="doc-name">Burofax - Oposicion a subida ilegal de renta</div>
+              <div class="doc-meta">Generado automaticamente | Revision recomendada</div>
+            </div>
+          </div>
+          <div class="doc-summary" style="font-family:monospace;font-size:12px;background:var(--code-bg);padding:16px;border-radius:8px;margin-top:12px;line-height:1.8">
+            D./Dna. [NOMBRE PROPIETARIO]<br>
+            [DIRECCION PROPIETARIO]<br><br>
+            Madrid, 19 de febrero de 2026<br><br>
+            <strong>ASUNTO: Oposicion a actualizacion de renta contraria a la LAU</strong><br><br>
+            Estimado/a Sr./Sra.:<br><br>
+            Por medio del presente burofax, le comunico mi oposicion formal a la actualizacion de renta del 15% que me ha sido notificada el dia [FECHA], por resultar contraria a lo dispuesto en el art. 18 de la Ley 29/1994, de Arrendamientos Urbanos...<br><br>
+            <em>[Documento completo disponible para descarga]</em>
+          </div>
+        </div>
+        <p>He incluido las referencias legales pertinentes y los fundamentos juridicos. Le recomiendo que un abogado lo revise antes de enviarlo.</p>
+      </div>
+      <div class="action-buttons">
+        <button class="action-btn" onclick="showToast('Descargando PDF...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span> Descargar PDF</button>
+        <button class="action-btn" onclick="showToast('Abriendo editor...')"><span class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></span> Editar documento</button>
+      </div>`;
+    msgs.appendChild(aiMsg);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 2500);
+}
+
+const cannedAI = [
+  `<p>Entiendo su consulta. Dejeme analizar los aspectos juridicos relevantes.</p>
+   <p>Segun la normativa vigente, usted tiene varios derechos que le protegen en esta situacion. Le recomiendo:</p>
+   <ul>
+     <li><strong>Documentar todo</strong> por escrito</li>
+     <li><strong>No firmar nada</strong> sin consultar previamente</li>
+     <li>Considerar una <strong>consulta presencial</strong> con uno de nuestros abogados especializados</li>
+   </ul>
+   <p>Quiere que profundice en algun aspecto concreto?</p>`,
+  `<p>He encontrado jurisprudencia adicional relevante para su caso:</p>
+   <div class="case-card">
+     <div class="case-card-header">
+       <div class="case-card-title">STS 1045/2025</div>
+       <span class="case-card-confidence confidence-high">88% relevante</span>
+     </div>
+     <div class="case-card-body">Sentencia reciente del Tribunal Supremo que refuerza la proteccion del inquilino frente a subidas abusivas de renta en zonas tensionadas.</div>
+     <div class="case-card-footer">
+       <span class="case-tag">Zona tensionada</span>
+       <span class="case-tag">2025</span>
+     </div>
+   </div>
+   <p>Esta sentencia fortalece significativamente su posicion. Quiere que la incluya en el burofax?</p>`
+];
+let aiIdx = 0;
+
+function sendMsg(){
+  const input = document.getElementById('inputField');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  const msgs = document.getElementById('messages');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'message msg-human';
+  userMsg.innerHTML = `
+    <div class="message-header">
+      <div class="message-avatar">JR</div>
+      <div class="message-name">Juan Rodriguez</div>
+    </div>
+    <div class="message-body"><p>${text}</p></div>`;
+  msgs.appendChild(userMsg);
+
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.innerHTML = `<div class="message-avatar" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(()=>{
+    typing.remove();
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'message msg-ai';
+    const response = cannedAI[aiIdx % cannedAI.length];
+    aiIdx++;
+    aiMsg.innerHTML = `
+      <div class="message-header">
+        <div class="message-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+        <div class="message-name">LexIA Pro</div>
+      </div>
+      <div class="message-body">${response}</div>
+      <div class="action-buttons">
+        <button class="action-btn" onclick="showToast('Generando documento...')"><span class="action-btn-icon">&#128196;</span> Generar documento</button>
+        <button class="action-btn" onclick="showToast('Abriendo agenda...')"><span class="action-btn-icon">&#128197;</span> Agendar consulta</button>
+      </div>`;
+    msgs.appendChild(aiMsg);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 2000 + Math.random() * 1500);
+}
+</script>
+</body>
+</html>

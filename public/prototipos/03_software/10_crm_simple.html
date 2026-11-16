@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Simple - GT Dev Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B;display:flex;height:100vh;overflow:hidden}
+/* Sidebar */
+.sidebar{width:260px;background:#1E293B;color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid #334155;font-size:18px;font-weight:700;letter-spacing:-.5px}
+.sidebar-logo span{color:#2563EB}
+.sidebar-nav{flex:1;padding:16px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#94A3B8;font-size:14px;font-weight:500;margin-bottom:2px;transition:all .2s}
+.nav-item:hover{background:#334155;color:#E2E8F0}
+.nav-item.active{background:#2563EB;color:#fff}
+.nav-item .icon{width:20px;text-align:center;font-size:16px}
+.sidebar-footer{padding:16px 20px;border-top:1px solid #334155;font-size:12px;color:#64748B}
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* Topbar */
+.topbar{height:64px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-left h2{font-size:18px;font-weight:600}
+.search-box{display:flex;align-items:center;background:#F1F5F9;border-radius:8px;padding:8px 14px;gap:8px;width:280px}
+.search-box input{border:none;background:none;outline:none;font-family:inherit;font-size:13px;width:100%;color:#1E293B}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.notif-bell{position:relative;cursor:pointer;font-size:20px}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#EF4444;border-radius:50%}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,#2563EB,#7C3AED);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;cursor:pointer}
+/* Content */
+.content{flex:1;overflow-y:auto;padding:24px}
+.view{display:none}
+.view.active{display:block}
+/* Dashboard */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-label{font-size:12px;color:#64748B;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:28px;font-weight:700;margin:4px 0}
+.stat-change{font-size:12px;font-weight:500}
+.stat-change.up{color:#10B981}
+.stat-change.down{color:#EF4444}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.card{background:#fff;border-radius:12px;padding:20px;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h3{font-size:15px;font-weight:600;margin-bottom:16px}
+/* Pipeline funnel */
+.funnel{display:flex;flex-direction:column;gap:6px}
+.funnel-bar{height:36px;border-radius:6px;display:flex;align-items:center;padding:0 14px;color:#fff;font-size:13px;font-weight:500;justify-content:space-between;transition:all .3s}
+.funnel-bar:hover{transform:scaleX(1.02);filter:brightness(1.1)}
+/* Tasks */
+.task-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9}
+.task-item:last-child{border:none}
+.task-check{width:18px;height:18px;border:2px solid #CBD5E1;border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.task-check.done{background:#2563EB;border-color:#2563EB;color:#fff;font-size:11px}
+.task-text{flex:1;font-size:13px}
+.task-text.done{text-decoration:line-through;color:#94A3B8}
+.task-due{font-size:11px;padding:3px 8px;border-radius:12px;font-weight:500}
+.task-due.urgent{background:#FEE2E2;color:#DC2626}
+.task-due.soon{background:#FEF3C7;color:#D97706}
+.task-due.ok{background:#DCFCE7;color:#16A34A}
+/* Activity */
+.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:13px}
+.activity-item:last-child{border:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.activity-time{color:#94A3B8;font-size:11px;margin-top:2px}
+/* Contacts */
+.table-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.filter-row{display:flex;gap:8px}
+.filter-btn{padding:6px 14px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:#475569}
+.filter-btn.active{background:#2563EB;color:#fff;border-color:#2563EB}
+.btn-primary{background:#2563EB;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-primary:hover{background:#1D4ED8}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:12px;color:#64748B;font-weight:600;border-bottom:2px solid #E2E8F0;text-transform:uppercase;letter-spacing:.5px}
+td{padding:12px;font-size:13px;border-bottom:1px solid #F1F5F9}
+.contact-name{display:flex;align-items:center;gap:10px}
+.contact-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:12px;flex-shrink:0}
+.tag{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500}
+.tag-lead{background:#DBEAFE;color:#2563EB}
+.tag-client{background:#DCFCE7;color:#16A34A}
+.tag-prospect{background:#FEF3C7;color:#D97706}
+/* Kanban */
+.kanban{display:flex;gap:16px;overflow-x:auto;padding-bottom:12px}
+.kanban-col{min-width:240px;flex:1;background:#F1F5F9;border-radius:12px;padding:12px}
+.kanban-header{display:flex;justify-content:space-between;align-items:center;padding:8px 4px;margin-bottom:8px}
+.kanban-title{font-size:13px;font-weight:600}
+.kanban-count{background:#E2E8F0;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.kanban-card{background:#fff;border-radius:8px;padding:14px;margin-bottom:8px;border:1px solid #E2E8F0;cursor:grab;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
+.kanban-card h4{font-size:13px;font-weight:600;margin-bottom:6px}
+.kanban-card p{font-size:12px;color:#64748B}
+.kanban-amount{font-size:14px;font-weight:700;color:#2563EB;margin-top:6px}
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus{border-color:#2563EB}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-secondary{background:#F1F5F9;color:#475569;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+/* Tareas view */
+.task-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.priority-tag{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase}
+.priority-high{background:#FEE2E2;color:#DC2626}
+.priority-medium{background:#FEF3C7;color:#D97706}
+.priority-low{background:#DCFCE7;color:#16A34A}
+.task-assignee{font-size:11px;color:#94A3B8}
+/* Footer */
+.watermark{text-align:center;padding:16px;font-size:11px;color:#94A3B8;border-top:1px solid #E2E8F0;margin-top:auto;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">CRM<span>Pro</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="showView('dashboard')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span> Dashboard</div>
+    <div class="nav-item" onclick="showView('contactos')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Contactos</div>
+    <div class="nav-item" onclick="showView('negocios')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg></span> Negocios</div>
+    <div class="nav-item" onclick="showView('tareas')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Tareas</div>
+    <div class="nav-item" onclick="showView('config')"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Configuracion</div>
+  </nav>
+  <div class="sidebar-footer">CRM Pro v2.1 &bull; Licencia Activa</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2 id="page-title">Dashboard</h2>
+      <div class="search-box">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <input type="text" placeholder="Buscar contactos, negocios, tareas...">
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-bell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><div class="notif-dot"></div></div>
+      <div class="avatar">GT</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Contactos Totales</div>
+          <div class="stat-value">347</div>
+          <div class="stat-change up">↑ 12% este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Negocios Abiertos</div>
+          <div class="stat-value">23</div>
+          <div class="stat-change up">↑ 3 nuevos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Valor Pipeline</div>
+          <div class="stat-value" style="color:#2563EB">€84.5K</div>
+          <div class="stat-change up">↑ 18% vs mes anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tasa de Cierre</div>
+          <div class="stat-value">34%</div>
+          <div class="stat-change down">↓ 2% este mes</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Pipeline de Ventas</h3>
+          <div class="funnel">
+            <div class="funnel-bar" style="background:#3B82F6;width:100%"><span>Prospecto</span><span>45</span></div>
+            <div class="funnel-bar" style="background:#6366F1;width:82%"><span>Contactado</span><span>32</span></div>
+            <div class="funnel-bar" style="background:#8B5CF6;width:58%"><span>Propuesta</span><span>18</span></div>
+            <div class="funnel-bar" style="background:#A855F7;width:35%"><span>Negociacion</span><span>11</span></div>
+            <div class="funnel-bar" style="background:#10B981;width:20%"><span>Cerrado</span><span>8</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Tareas para Hoy</h3>
+          <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div><span class="task-text">Llamar a Carlos Lopez - seguimiento propuesta</span><span class="task-due urgent">Hoy</span></div>
+          <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div><span class="task-text">Enviar presupuesto Restaurante El Molino</span><span class="task-due urgent">Hoy</span></div>
+          <div class="task-item"><div class="task-check done" onclick="toggleTask(this)">✓</div><span class="task-text done">Reunir info tecnica proyecto Gym Norte</span><span class="task-due ok">Hecho</span></div>
+          <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div><span class="task-text">Preparar demo para Clinica Dental Sol</span><span class="task-due soon">Manana</span></div>
+          <div class="task-item"><div class="task-check" onclick="toggleTask(this)"></div><span class="task-text">Revisar contrato Hotel Miramar</span><span class="task-due soon">Lun</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Actividad Reciente</h3>
+        <div class="activity-item"><div class="activity-dot" style="background:#2563EB"></div><div><div><strong>Maria Garcia</strong> se agrego como contacto</div><div class="activity-time">Hace 15 min</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#10B981"></div><div><div>Negocio <strong>"Web Clinica Dental Sol"</strong> avanzado a Propuesta</div><div class="activity-time">Hace 1 hora</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#F59E0B"></div><div><div>Email enviado a <strong>Carlos Lopez</strong> - Presupuesto actualizado</div><div class="activity-time">Hace 2 horas</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#8B5CF6"></div><div><div>Tarea completada: <strong>"Preparar presentacion Gym Norte"</strong></div><div class="activity-time">Hace 3 horas</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#EF4444"></div><div><div>Negocio <strong>"App Restaurante"</strong> marcado como Perdido</div><div class="activity-time">Ayer 18:30</div></div></div>
+      </div>
+    </div>
+
+    <!-- CONTACTOS -->
+    <div class="view" id="view-contactos">
+      <div class="card">
+        <div class="table-controls">
+          <div class="filter-row">
+            <button class="filter-btn active" onclick="filterContacts(this,'all')">Todos</button>
+            <button class="filter-btn" onclick="filterContacts(this,'client')">Clientes</button>
+            <button class="filter-btn" onclick="filterContacts(this,'lead')">Leads</button>
+            <button class="filter-btn" onclick="filterContacts(this,'prospect')">Prospectos</button>
+          </div>
+          <button class="btn-primary" onclick="openModal()">+ Nuevo Contacto</button>
+        </div>
+        <table>
+          <thead><tr><th>Nombre</th><th>Empresa</th><th>Email</th><th>Telefono</th><th>Tipo</th><th>Ultimo Contacto</th></tr></thead>
+          <tbody id="contacts-table">
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#2563EB">CL</div>Carlos Lopez</div></td><td>Gym Norte Madrid</td><td>carlos@gymnorte.es</td><td>+34 612 345 678</td><td><span class="tag tag-client">Cliente</span></td><td>Hoy</td></tr>
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#7C3AED">MG</div>Maria Garcia</div></td><td>Clinica Dental Sol</td><td>maria@clinicasol.es</td><td>+34 623 456 789</td><td><span class="tag tag-lead">Lead</span></td><td>Hoy</td></tr>
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#10B981">AR</div>Antonio Rodriguez</div></td><td>Hotel Miramar</td><td>antonio@miramar.es</td><td>+34 634 567 890</td><td><span class="tag tag-prospect">Prospecto</span></td><td>Hace 2 dias</td></tr>
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#F59E0B">LM</div>Laura Martinez</div></td><td>Restaurante El Molino</td><td>laura@elmolino.es</td><td>+34 645 678 901</td><td><span class="tag tag-lead">Lead</span></td><td>Hace 1 dia</td></tr>
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#EF4444">PF</div>Pedro Fernandez</div></td><td>Academy Fit Pro</td><td>pedro@fitpro.es</td><td>+34 656 789 012</td><td><span class="tag tag-client">Cliente</span></td><td>Hace 3 dias</td></tr>
+            <tr><td><div class="contact-name"><div class="contact-avatar" style="background:#6366F1">SR</div>Sofia Ruiz</div></td><td>Centro Bienestar Zen</td><td>sofia@zenbienestar.es</td><td>+34 667 890 123</td><td><span class="tag tag-prospect">Prospecto</span></td><td>Hace 5 dias</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NEGOCIOS (Kanban) -->
+    <div class="view" id="view-negocios">
+      <div class="kanban">
+        <div class="kanban-col">
+          <div class="kanban-header"><span class="kanban-title" style="color:#3B82F6"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#3B82F6"/></svg> Prospecto</span><span class="kanban-count">3</span></div>
+          <div class="kanban-card"><h4>Web Spa Premium</h4><p>Centro Bienestar Zen</p><div class="kanban-amount">€4.500</div></div>
+          <div class="kanban-card"><h4>App Reservas Yoga</h4><p>YogaLife Madrid</p><div class="kanban-amount">€6.200</div></div>
+          <div class="kanban-card"><h4>Automatizacion Email</h4><p>Tienda Orgánica</p><div class="kanban-amount">€1.800</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header"><span class="kanban-title" style="color:#6366F1"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#6366F1"/></svg> Contactado</span><span class="kanban-count">2</span></div>
+          <div class="kanban-card"><h4>Sistema Gestion Hotel</h4><p>Hotel Miramar</p><div class="kanban-amount">€12.000</div></div>
+          <div class="kanban-card"><h4>CRM Restaurante</h4><p>Restaurante El Molino</p><div class="kanban-amount">€3.500</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header"><span class="kanban-title" style="color:#8B5CF6"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#8B5CF6"/></svg> Propuesta</span><span class="kanban-count">2</span></div>
+          <div class="kanban-card"><h4>Web + App Clinica</h4><p>Clinica Dental Sol</p><div class="kanban-amount">€8.500</div></div>
+          <div class="kanban-card"><h4>Dashboard KPIs</h4><p>Consultora XYZ</p><div class="kanban-amount">€5.000</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header"><span class="kanban-title" style="color:#A855F7"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#A855F7"/></svg> Negociacion</span><span class="kanban-count">2</span></div>
+          <div class="kanban-card"><h4>Plataforma Gym Completa</h4><p>Gym Norte Madrid</p><div class="kanban-amount">€15.000</div></div>
+          <div class="kanban-card"><h4>Chatbot IA Soporte</h4><p>Academy Fit Pro</p><div class="kanban-amount">€4.800</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header"><span class="kanban-title" style="color:#10B981"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#10B981"/></svg> Cerrado</span><span class="kanban-count">2</span></div>
+          <div class="kanban-card" style="border-left:3px solid #10B981"><h4>Web Landing + SEO</h4><p>Farmacia Central</p><div class="kanban-amount">€2.800</div></div>
+          <div class="kanban-card" style="border-left:3px solid #10B981"><h4>Automatizacion Facturas</h4><p>Asesoria Legalis</p><div class="kanban-amount">€2.200</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAREAS -->
+    <div class="view" id="view-tareas">
+      <div class="card">
+        <div class="task-header">
+          <h3>Todas las Tareas</h3>
+          <button class="btn-primary" onclick="openModal()">+ Nueva Tarea</button>
+        </div>
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div style="flex:1"><div class="task-text">Llamar a Carlos Lopez - seguimiento propuesta Gym Norte</div><div class="task-assignee">Asignado a: Gustavo &bull; Negocio: Plataforma Gym</div></div>
+          <span class="priority-tag priority-high">Alta</span>
+          <span class="task-due urgent">Hoy 14:00</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div style="flex:1"><div class="task-text">Enviar presupuesto actualizado Restaurante El Molino</div><div class="task-assignee">Asignado a: Gustavo &bull; Negocio: CRM Restaurante</div></div>
+          <span class="priority-tag priority-high">Alta</span>
+          <span class="task-due urgent">Hoy 18:00</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div style="flex:1"><div class="task-text">Preparar demo interactiva para Clinica Dental Sol</div><div class="task-assignee">Asignado a: Ana &bull; Negocio: Web + App Clinica</div></div>
+          <span class="priority-tag priority-medium">Media</span>
+          <span class="task-due soon">Manana</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div style="flex:1"><div class="task-text">Revisar contrato borrador Hotel Miramar con legal</div><div class="task-assignee">Asignado a: Gustavo &bull; Negocio: Sistema Gestion Hotel</div></div>
+          <span class="priority-tag priority-medium">Media</span>
+          <span class="task-due soon">Lun 10:00</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check done" onclick="toggleTask(this)">✓</div>
+          <div style="flex:1"><div class="task-text done">Reunir requisitos tecnicos proyecto Gym Norte</div><div class="task-assignee">Asignado a: Gustavo &bull; Completado</div></div>
+          <span class="priority-tag priority-low">Baja</span>
+          <span class="task-due ok">Hecho</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div style="flex:1"><div class="task-text">Investigar integraciones API Academy Fit Pro</div><div class="task-assignee">Asignado a: Ana &bull; Negocio: Chatbot IA Soporte</div></div>
+          <span class="priority-tag priority-low">Baja</span>
+          <span class="task-due ok">Mie</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="view" id="view-config">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Perfil de Empresa</h3>
+          <div class="form-group"><label>Nombre Empresa</label><input type="text" value="Mi Empresa S.L."></div>
+          <div class="form-group"><label>Email</label><input type="email" value="info@miempresa.es"></div>
+          <div class="form-group"><label>Telefono</label><input type="text" value="+34 910 123 456"></div>
+          <button class="btn-primary" style="margin-top:8px">Guardar Cambios</button>
+        </div>
+        <div class="card">
+          <h3>Etapas del Pipeline</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F1F5F9;border-radius:8px"><span style="font-size:13px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#3B82F6"/></svg> Prospecto</span><span style="font-size:12px;color:#64748B">Etapa 1</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F1F5F9;border-radius:8px"><span style="font-size:13px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#6366F1"/></svg> Contactado</span><span style="font-size:12px;color:#64748B">Etapa 2</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F1F5F9;border-radius:8px"><span style="font-size:13px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#8B5CF6"/></svg> Propuesta</span><span style="font-size:12px;color:#64748B">Etapa 3</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F1F5F9;border-radius:8px"><span style="font-size:13px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#A855F7"/></svg> Negociacion</span><span style="font-size:12px;color:#64748B">Etapa 4</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F1F5F9;border-radius:8px"><span style="font-size:13px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:middle;margin-right:2px"><circle cx="6" cy="6" r="5" fill="#10B981"/></svg> Cerrado</span><span style="font-size:12px;color:#64748B">Etapa 5</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">Prototipo GT Dev Solutions &bull; Demo interactiva &bull; CRM Simple</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Nuevo Contacto</h3>
+    <div class="form-group"><label>Nombre Completo</label><input type="text" placeholder="Ej: Maria Garcia"></div>
+    <div class="form-group"><label>Empresa</label><input type="text" placeholder="Ej: Clinica Dental Sol"></div>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="maria@empresa.es"></div>
+    <div class="form-group"><label>Telefono</label><input type="text" placeholder="+34 600 000 000"></div>
+    <div class="form-group"><label>Tipo</label><select><option>Lead</option><option>Prospecto</option><option>Cliente</option></select></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="closeModal()">Guardar Contacto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const titles={dashboard:'Dashboard',contactos:'Contactos',negocios:'Negocios',tareas:'Tareas',config:'Configuracion'};
+  document.getElementById('page-title').textContent=titles[view]||view;
+}
+function toggleTask(el){
+  el.classList.toggle('done');
+  const txt=el.nextElementSibling;
+  if(el.classList.contains('done')){el.innerHTML='✓';if(txt)txt.classList.add('done')}
+  else{el.innerHTML='';if(txt)txt.classList.remove('done')}
+}
+function filterContacts(btn,type){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const rows=document.querySelectorAll('#contacts-table tr');
+  rows.forEach(r=>{
+    if(type==='all'){r.style.display=''}
+    else{const tag=r.querySelector('.tag');r.style.display=tag&&tag.classList.contains('tag-'+type)?'':'none'}
+  });
+}
+function openModal(){document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+</script>
+</body>
+</html>

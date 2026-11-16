@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Móvil Compleja — WorkHub Madrid</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .phone-frame{width:375px;height:812px;border:8px solid #1a1a1a;border-radius:40px;background:#fff;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3),0 0 0 2px #333}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:28px;background:#1a1a1a;border-radius:0 0 18px 18px;z-index:100}
+  .status-bar{height:48px;padding:14px 24px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:#1a1a1a;background:#fff;position:relative;z-index:50}
+  .status-bar .time{margin-left:8px} .status-bar .icons{display:flex;gap:6px;align-items:center;margin-right:8px;font-size:11px}
+  .screen-area{position:absolute;top:48px;bottom:72px;left:0;right:0;overflow:hidden}
+  .screen{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s;background:#f8f9fa}
+  .screen.active{opacity:1;pointer-events:auto} .screen::-webkit-scrollbar{width:0}
+  h1{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+  h2{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:10px}
+  .sub{font-size:13px;color:#6b7280;margin-bottom:14px}
+  .card{background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px}
+  .btn-primary{width:100%;padding:14px;background:#2563EB;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s}
+  .btn-primary:hover{background:#1d4ed8} .btn-primary:active{transform:scale(.98)}
+  .btn-sm{padding:8px 16px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s}
+  .btn-sm:hover{background:#1d4ed8}
+  .btn-outline{padding:8px 16px;background:transparent;color:#2563EB;border:1.5px solid #2563EB;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+  .btn-outline:hover{background:#eff6ff}
+  /* Dashboard */
+  .dash-header{background:linear-gradient(135deg,#2563EB,#7c3aed);border-radius:16px;padding:20px;color:#fff;margin-bottom:14px}
+  .dash-header h2{color:#fff;font-size:15px;margin-bottom:2px;opacity:.9} .dash-header h1{color:#fff;font-size:20px}
+  .dash-header p{font-size:12px;opacity:.8;margin-top:6px}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat-box{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .stat-box .num{font-size:22px;font-weight:800;color:#2563EB} .stat-box .lbl{font-size:10px;color:#6b7280;margin-top:2px}
+  .quick-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+  .quick-item{text-align:center;cursor:pointer;padding:10px 4px;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:transform .2s}
+  .quick-item:hover{transform:translateY(-2px)}
+  .quick-item .qi{font-size:24px;margin-bottom:4px} .quick-item span{font-size:10px;font-weight:500;color:#374151}
+  .event-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+  .event-item:last-child{border:none}
+  .event-dot{width:4px;border-radius:2px;flex-shrink:0}
+  .event-info h4{font-size:13px;font-weight:500} .event-info span{font-size:11px;color:#6b7280}
+  /* Spaces */
+  .filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .filter-row::-webkit-scrollbar{display:none}
+  .filter-chip{padding:7px 14px;border-radius:18px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .2s;background:#fff;color:#6b7280;border:1.5px solid #e5e7eb}
+  .filter-chip.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .space-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;cursor:pointer;transition:transform .2s}
+  .space-card:hover{transform:translateY(-2px)}
+  .space-img{height:110px;display:flex;align-items:flex-end;padding:10px}
+  .space-img .tag{background:rgba(255,255,255,.9);padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
+  .space-body{padding:12px}
+  .space-body h3{font-size:14px;font-weight:600;margin-bottom:2px}
+  .space-body .meta{font-size:12px;color:#6b7280;margin-bottom:6px}
+  .space-body .space-footer{display:flex;justify-content:space-between;align-items:center}
+  .space-body .price{font-size:15px;font-weight:700;color:#2563EB}
+  .avail{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px}
+  .avail.green{background:#d1fae5;color:#065f46} .avail.orange{background:#fff7ed;color:#9a3412} .avail.red{background:#fee2e2;color:#991b1b}
+  /* Booking */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+  .cal-head{font-size:11px;font-weight:500;color:#9ca3af;text-align:center;padding:4px}
+  .cal-day{text-align:center;padding:8px 4px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
+  .cal-day:hover{background:#eff6ff} .cal-day.today{background:#2563EB;color:#fff;font-weight:600} .cal-day.disabled{color:#d1d5db;pointer-events:none}
+  .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+  .time-slot{padding:10px;text-align:center;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;background:#fff;border:1.5px solid #e5e7eb;color:#374151}
+  .time-slot:hover{border-color:#2563EB;color:#2563EB} .time-slot.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .time-slot.disabled{background:#f9fafb;color:#d1d5db;pointer-events:none}
+  /* Community */
+  .post-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px}
+  .post-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .post-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;flex-shrink:0}
+  .post-header .ph-info h4{font-size:13px;font-weight:500} .post-header .ph-info span{font-size:11px;color:#9ca3af}
+  .post-body{font-size:13px;color:#374151;line-height:1.5;margin-bottom:10px}
+  .post-actions{display:flex;gap:16px}
+  .post-act{font-size:12px;color:#6b7280;cursor:pointer;display:flex;align-items:center;gap:4px;transition:color .2s}
+  .post-act:hover{color:#2563EB}
+  .member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+  .member-row:last-child{border:none}
+  .member-row .m-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0}
+  .member-row .m-info{flex:1} .member-row .m-info h4{font-size:13px;font-weight:500} .member-row .m-info span{font-size:11px;color:#9ca3af}
+  /* Services */
+  .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .srv-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:transform .2s;text-align:center}
+  .srv-card:hover{transform:translateY(-2px)}
+  .srv-card .si{font-size:28px;margin-bottom:8px} .srv-card h4{font-size:13px;font-weight:600;margin-bottom:2px} .srv-card p{font-size:11px;color:#6b7280}
+  /* Profile */
+  .profile-top{text-align:center;padding:16px 0}
+  .p-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;background:linear-gradient(135deg,#2563EB,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+  .membership-card{background:linear-gradient(135deg,#1e40af,#7c3aed);border-radius:16px;padding:16px;color:#fff;margin-bottom:14px}
+  .membership-card h3{font-size:12px;opacity:.85;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
+  .membership-card .plan{font-size:20px;font-weight:700}
+  .membership-card .exp{font-size:11px;opacity:.75;margin-top:6px}
+  .usage-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:4px}
+  .usage-fill{height:100%;border-radius:4px;transition:width .5s}
+  .usage-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .usage-row .u-label{font-size:13px;font-weight:500} .usage-row .u-val{font-size:12px;color:#6b7280}
+  .chart-bar-row{display:flex;align-items:flex-end;gap:6px;height:100px;margin-bottom:6px;padding:0 4px}
+  .chart-bar{flex:1;border-radius:4px 4px 0 0;transition:height .5s;cursor:pointer;position:relative}
+  .chart-bar:hover{opacity:.8}
+  .chart-labels{display:flex;gap:6px;padding:0 4px}
+  .chart-labels span{flex:1;text-align:center;font-size:9px;color:#9ca3af}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer}
+  .setting-row:last-child{border:none}
+  .setting-row .sr-left{display:flex;align-items:center;gap:10px}
+  .setting-row .sr-icon{font-size:18px} .setting-row .sr-text{font-size:13px;font-weight:500}
+  .setting-row .sr-arrow{color:#d1d5db;font-size:16px}
+  /* Notifications */
+  .notif-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer}
+  .notif-item:last-child{border:none}
+  .notif-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .notif-text{flex:1} .notif-text h4{font-size:13px;font-weight:500;margin-bottom:1px} .notif-text p{font-size:12px;color:#6b7280;line-height:1.3} .notif-text .nt{font-size:10px;color:#9ca3af;margin-top:3px}
+  .bottom-nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-around;padding-bottom:8px;z-index:50}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 8px;border-radius:10px;transition:background .2s}
+  .nav-item:hover{background:#f3f4f6}
+  .nav-item .ni{font-size:20px;opacity:.4;transition:opacity .2s} .nav-item .nl{font-size:9px;font-weight:500;color:#9ca3af;transition:color .2s}
+  .nav-item.active .ni{opacity:1} .nav-item.active .nl{color:#2563EB;font-weight:600}
+  .badge{position:relative} .badge::after{content:'3';position:absolute;top:-4px;right:-6px;width:16px;height:16px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .proto-label{margin-top:16px;font-size:12px;color:#9ca3af;text-align:center;letter-spacing:.5px}
+  .toast{position:absolute;bottom:84px;left:16px;right:16px;background:#065f46;color:#fff;padding:14px 16px;border-radius:12px;font-size:13px;font-weight:500;text-align:center;z-index:80;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .form-group{margin-bottom:12px}
+  .form-group label{display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:5px}
+  .form-group select,.form-group input{width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;background:#fff;outline:none;transition:border-color .2s}
+  .form-group select:focus,.form-group input:focus{border-color:#2563EB}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .section-header h2{margin-bottom:0} .see-all{font-size:12px;color:#2563EB;cursor:pointer;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span class="time">10:15</span>
+    <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>WiFi</span> <span>92%</span></div>
+  </div>
+  <div class="screen-area">
+
+    <!-- INICIO / DASHBOARD -->
+    <div class="screen active" id="screen-0">
+      <div class="dash-header">
+        <h2>Buenos días</h2>
+        <h1>Ana Martínez</h1>
+        <p>Plan Premium · Hot Desk reservado hoy 09:00-18:00</p>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">12</div><div class="lbl">Días este mes</div></div>
+        <div class="stat-box"><div class="num">3</div><div class="lbl">Reservas activas</div></div>
+        <div class="stat-box"><div class="num">47</div><div class="lbl">Conexiones</div></div>
+      </div>
+      <div class="quick-row">
+        <div class="quick-item" onclick="switchTab(2)"><div class="qi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></div><span>Reservar</span></div>
+        <div class="quick-item" onclick="switchTab(1)"><div class="qi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></div><span>Espacios</span></div>
+        <div class="quick-item" onclick="switchTab(3)"><div class="qi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span>Comunidad</span></div>
+        <div class="quick-item" onclick="switchTab(4)"><div class="qi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div><span>Servicios</span></div>
+      </div>
+      <div class="section-header"><h2>Eventos hoy</h2><span class="see-all">Ver todos</span></div>
+      <div class="card">
+        <div class="event-item">
+          <div class="event-dot" style="background:#2563EB"></div>
+          <div class="event-info"><h4>Networking Lunch</h4><span>13:00 - Sala Común · 18 asistentes</span></div>
+        </div>
+        <div class="event-item">
+          <div class="event-dot" style="background:#f59e0b"></div>
+          <div class="event-info"><h4>Workshop: IA para Startups</h4><span>17:00 - Auditorio · 32 asistentes</span></div>
+        </div>
+        <div class="event-item">
+          <div class="event-dot" style="background:#10b981"></div>
+          <div class="event-info"><h4>After Work Drinks</h4><span>19:30 - Terraza · Abierto a todos</span></div>
+        </div>
+      </div>
+      <div class="section-header"><h2>Comunidad</h2><span class="see-all" onclick="switchTab(3)">Ver más</span></div>
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">MR</div>
+          <div class="ph-info"><h4>Miguel Rodríguez</h4><span>Hace 20 min · Diseñador UX</span></div>
+        </div>
+        <div class="post-body">Alguien conoce un buen CRM para startups B2B? Estamos evaluando opciones. Gracias!</div>
+        <div class="post-actions">
+          <span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> 5</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg> 3</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg> Compartir</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESPACIOS -->
+    <div class="screen" id="screen-1">
+      <h1>Espacios</h1>
+      <p class="sub">Encuentra tu lugar de trabajo ideal</p>
+      <div class="filter-row">
+        <div class="filter-chip active" onclick="filterSpaces('all',this)">Todos</div>
+        <div class="filter-chip" onclick="filterSpaces('desk',this)">Hot Desk</div>
+        <div class="filter-chip" onclick="filterSpaces('office',this)">Oficina</div>
+        <div class="filter-chip" onclick="filterSpaces('meeting',this)">Reunión</div>
+        <div class="filter-chip" onclick="filterSpaces('event',this)">Eventos</div>
+      </div>
+      <div id="spacesList">
+        <div class="space-card" data-type="desk">
+          <div class="space-img" style="background:linear-gradient(rgba(219,234,254,0.3),rgba(147,197,253,0.3)),url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=140&fit=crop&q=80') center/cover no-repeat"><span class="tag" style="color:#1e40af">Hot Desk</span></div>
+          <div class="space-body"><h3>Zona Open Space</h3><div class="meta">Planta 2 · WiFi 1Gbps · Enchufes USB-C</div><div class="space-footer"><span class="price">€15/día</span><span class="avail green">8 libres</span></div></div>
+        </div>
+        <div class="space-card" data-type="office">
+          <div class="space-img" style="background:linear-gradient(rgba(237,233,254,0.3),rgba(196,181,253,0.3)),url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=140&fit=crop&q=80') center/cover no-repeat"><span class="tag" style="color:#5b21b6">Oficina Privada</span></div>
+          <div class="space-body"><h3>Suite A — 4 personas</h3><div class="meta">Planta 3 · Cerradura smart · Monitor 27"</div><div class="space-footer"><span class="price">€600/mes</span><span class="avail orange">2 disponibles</span></div></div>
+        </div>
+        <div class="space-card" data-type="meeting">
+          <div class="space-img" style="background:linear-gradient(rgba(209,250,229,0.3),rgba(110,231,183,0.3)),url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=140&fit=crop&q=80') center/cover no-repeat"><span class="tag" style="color:#065f46">Sala Reunión</span></div>
+          <div class="space-body"><h3>Sala Retiro — 8 personas</h3><div class="meta">Planta 1 · TV 65" · Videoconferencia</div><div class="space-footer"><span class="price">€20/hora</span><span class="avail green">Disponible ahora</span></div></div>
+        </div>
+        <div class="space-card" data-type="event">
+          <div class="space-img" style="background:linear-gradient(rgba(254,243,199,0.3),rgba(252,211,77,0.3)),url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=140&fit=crop&q=80') center/cover no-repeat"><span class="tag" style="color:#92400e">Evento</span></div>
+          <div class="space-body"><h3>Auditorio — 50 personas</h3><div class="meta">Planta 0 · Proyector 4K · Micro · Streaming</div><div class="space-footer"><span class="price">€150/hora</span><span class="avail red">Reservado hoy</span></div></div>
+        </div>
+        <div class="space-card" data-type="desk">
+          <div class="space-img" style="background:linear-gradient(rgba(252,231,243,0.3),rgba(249,168,212,0.3)),url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=140&fit=crop&q=80') center/cover no-repeat"><span class="tag" style="color:#9d174d">Dedicated Desk</span></div>
+          <div class="space-body"><h3>Puesto fijo con armario</h3><div class="meta">Planta 2 · Monitor dual · Silla ergonómica</div><div class="space-footer"><span class="price">€250/mes</span><span class="avail green">5 libres</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESERVAR -->
+    <div class="screen" id="screen-2">
+      <h1>Reservar</h1>
+      <p class="sub">Selecciona espacio, fecha y hora</p>
+      <div class="card">
+        <div class="form-group">
+          <label>Tipo de espacio</label>
+          <select><option>Hot Desk — Open Space</option><option>Oficina Privada — Suite A</option><option>Sala Retiro (8 pers)</option><option>Auditorio (50 pers)</option><option>Dedicated Desk</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:8px">Febrero 2026</h2>
+        <div class="cal-grid">
+          <div class="cal-head">L</div><div class="cal-head">M</div><div class="cal-head">X</div><div class="cal-head">J</div><div class="cal-head">V</div><div class="cal-head">S</div><div class="cal-head">D</div>
+          <div class="cal-day disabled"></div><div class="cal-day disabled"></div><div class="cal-day disabled"></div><div class="cal-day disabled"></div><div class="cal-day disabled"></div><div class="cal-day disabled"></div><div class="cal-day disabled">1</div>
+          <div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div>
+          <div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div>
+          <div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day today">19</div><div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div>
+          <div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day disabled"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:8px">Horario</h2>
+        <div class="time-grid">
+          <div class="time-slot disabled">08:00</div><div class="time-slot">09:00</div><div class="time-slot active">10:00</div><div class="time-slot">11:00</div>
+          <div class="time-slot">12:00</div><div class="time-slot disabled">13:00</div><div class="time-slot">14:00</div><div class="time-slot">15:00</div>
+          <div class="time-slot">16:00</div><div class="time-slot">17:00</div><div class="time-slot disabled">18:00</div><div class="time-slot disabled">19:00</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0"><span>Hot Desk · 19 Feb · 10:00-18:00</span><span style="font-weight:700;color:#2563EB">€15</span></div>
+      </div>
+      <button class="btn-primary" onclick="showToast('Reserva confirmada. Te esperamos!')">Confirmar Reserva</button>
+    </div>
+
+    <!-- COMUNIDAD -->
+    <div class="screen" id="screen-3">
+      <h1>Comunidad</h1>
+      <p class="sub">Conecta con 128 profesionales en WorkHub</p>
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#10b981,#34d399)">LP</div>
+          <div class="ph-info"><h4>Laura Pérez</h4><span>Hace 1h · CEO en TechFlow</span></div>
+        </div>
+        <div class="post-body">Buscamos desarrollador React Senior para un proyecto de 3 meses. Full remote con opción de usar WorkHub. Interesados DM!</div>
+        <div class="post-actions"><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> 12</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg> 8</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg> Compartir</span></div>
+      </div>
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">MR</div>
+          <div class="ph-info"><h4>Miguel Rodríguez</h4><span>Hace 3h · Diseñador UX</span></div>
+        </div>
+        <div class="post-body">Alguien conoce un buen CRM para startups B2B? Estamos evaluando opciones. Gracias!</div>
+        <div class="post-actions"><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> 5</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg> 3</span><span class="post-act"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg> Compartir</span></div>
+      </div>
+      <div class="section-header" style="margin-top:8px"><h2>Miembros destacados</h2><span class="see-all">Ver todos</span></div>
+      <div class="card">
+        <div class="member-row"><div class="m-av" style="background:linear-gradient(135deg,#2563EB,#60a5fa)">SG</div><div class="m-info"><h4>Sofía González</h4><span>Marketing Digital · 32 conexiones</span></div><button class="btn-outline">Conectar</button></div>
+        <div class="member-row"><div class="m-av" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">DR</div><div class="m-info"><h4>David Ruiz</h4><span>Desarrollador Full-Stack · 45 conexiones</span></div><button class="btn-outline">Conectar</button></div>
+        <div class="member-row"><div class="m-av" style="background:linear-gradient(135deg,#ec4899,#f472b6)">CM</div><div class="m-info"><h4>Carmen Morales</h4><span>Abogada Tech · 21 conexiones</span></div><button class="btn-outline">Conectar</button></div>
+      </div>
+    </div>
+
+    <!-- SERVICIOS -->
+    <div class="screen" id="screen-4">
+      <h1>Servicios</h1>
+      <p class="sub">Extras para tu experiencia WorkHub</p>
+      <div class="service-grid">
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div><h4>Impresión</h4><p>B/N y color, A4/A3</p></div>
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div><h4>Parking</h4><p>Plazas subterráneas</p></div>
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div><h4>Correo</h4><p>Dirección postal virtual</p></div>
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></div><h4>Oficina Virtual</h4><p>Domicilio fiscal</p></div>
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div><h4>Catering</h4><p>Café, snacks, comidas</p></div>
+        <div class="srv-card"><div class="si"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div><h4>Taquillas</h4><p>Almacenamiento seguro</p></div>
+      </div>
+      <h2>Solicitudes activas</h2>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+          <div><strong style="font-size:13px">Parking — Feb 2026</strong><br><span style="font-size:11px;color:#6b7280">Plaza B2-15 · Renovación automática</span></div>
+          <span class="avail green">Activo</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+          <div><strong style="font-size:13px">Correo — Paquete pendiente</strong><br><span style="font-size:11px;color:#6b7280">Amazon · Llegó 18 Feb 14:30</span></div>
+          <span class="avail orange">Recoger</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="screen" id="screen-5">
+      <div class="profile-top">
+        <div class="p-avatar">AM</div>
+        <h2 style="font-size:18px;margin-bottom:2px">Ana Martínez</h2>
+        <p class="sub" style="margin-bottom:0">Product Manager · TechFlow SL</p>
+      </div>
+      <div class="membership-card">
+        <h3>Membresía</h3>
+        <div class="plan">Plan Premium</div>
+        <div class="exp">Válido hasta 31 Mar 2026 · Renovación automática</div>
+      </div>
+      <div class="card">
+        <h2>Uso este mes</h2>
+        <div class="usage-row"><span class="u-label">Días de asistencia</span><span class="u-val">12 / 20</span></div>
+        <div class="usage-bar"><div class="usage-fill" style="width:60%;background:linear-gradient(90deg,#2563EB,#60a5fa)"></div></div>
+        <div class="usage-row" style="margin-top:10px"><span class="u-label">Salas de reunión</span><span class="u-val">6h / 10h</span></div>
+        <div class="usage-bar"><div class="usage-fill" style="width:60%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+        <div class="usage-row" style="margin-top:10px"><span class="u-label">Impresiones</span><span class="u-val">45 / 100</span></div>
+        <div class="usage-bar"><div class="usage-fill" style="width:45%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+      </div>
+      <div class="card">
+        <h2>Asistencia semanal</h2>
+        <div class="chart-bar-row">
+          <div class="chart-bar" style="height:40%;background:#dbeafe"></div>
+          <div class="chart-bar" style="height:70%;background:#93c5fd"></div>
+          <div class="chart-bar" style="height:100%;background:#2563EB"></div>
+          <div class="chart-bar" style="height:85%;background:#60a5fa"></div>
+          <div class="chart-bar" style="height:55%;background:#93c5fd"></div>
+          <div class="chart-bar" style="height:20%;background:#dbeafe"></div>
+          <div class="chart-bar" style="height:0%;background:#eff6ff"></div>
+        </div>
+        <div class="chart-labels"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      </div>
+      <div class="card">
+        <h2>Ajustes</h2>
+        <div class="setting-row"><div class="sr-left"><span class="sr-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="sr-text">Notificaciones</span></div><span class="sr-arrow">›</span></div>
+        <div class="setting-row"><div class="sr-left"><span class="sr-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></span><span class="sr-text">Facturación</span></div><span class="sr-arrow">›</span></div>
+        <div class="setting-row"><div class="sr-left"><span class="sr-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span class="sr-text">Privacidad</span></div><span class="sr-arrow">›</span></div>
+        <div class="setting-row"><div class="sr-left"><span class="sr-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></span><span class="sr-text">Ayuda</span></div><span class="sr-arrow">›</span></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICACIONES -->
+    <div class="screen" id="screen-6">
+      <h1>Notificaciones</h1>
+      <p class="sub">Últimas actualizaciones</p>
+      <div class="card">
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#dbeafe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></div>
+          <div class="notif-text"><h4>Reserva confirmada</h4><p>Hot Desk mañana 09:00-18:00</p><div class="nt">Hace 5 min</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#d1fae5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="notif-text"><h4>Nueva conexión</h4><p>David Ruiz aceptó tu solicitud</p><div class="nt">Hace 1h</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#fef3c7"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="notif-text"><h4>Evento mañana</h4><p>Workshop IA para Startups — 17:00 Auditorio</p><div class="nt">Hace 3h</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#fce7f3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div>
+          <div class="notif-text"><h4>Paquete recibido</h4><p>Amazon — Recógelo en recepción</p><div class="nt">Ayer 14:30</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#ede9fe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div>
+          <div class="notif-text"><h4>Factura disponible</h4><p>Feb 2026 — €350.00 — Plan Premium</p><div class="nt">15 Feb</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon" style="background:#dbeafe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>
+          <div class="notif-text"><h4>Impresión lista</h4><p>12 páginas en Impresora Planta 2</p><div class="nt">14 Feb</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab(0)"><span class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="nl">Inicio</span></div>
+    <div class="nav-item" onclick="switchTab(1)"><span class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></span><span class="nl">Espacios</span></div>
+    <div class="nav-item" onclick="switchTab(2)"><span class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span><span class="nl">Reservar</span></div>
+    <div class="nav-item" onclick="switchTab(3)"><span class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nl">Comunidad</span></div>
+    <div class="nav-item" onclick="switchTab(6)"><span class="ni badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="nl">Alertas</span></div>
+  </div>
+</div>
+<div class="proto-label">Prototipo GT Dev Solutions</div>
+
+<script>
+  const totalScreens = 7;
+  const navItems = document.querySelectorAll('.nav-item');
+  const navMap = [0,1,2,3,6]; // bottom nav maps to these screens
+
+  function switchTab(screenIdx) {
+    for (let i = 0; i < totalScreens; i++) {
+      document.getElementById('screen-'+i).classList.toggle('active', i === screenIdx);
+    }
+    const navIdx = navMap.indexOf(screenIdx);
+    navItems.forEach((n, i) => n.classList.toggle('active', i === navIdx));
+  }
+
+  // Space filter
+  function filterSpaces(type, el) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.space-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? 'block' : 'none';
+    });
+  }
+
+  // Time slot selection
+  document.querySelectorAll('.time-slot:not(.disabled)').forEach(slot => {
+    slot.addEventListener('click', function() {
+      document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Calendar day selection
+  document.querySelectorAll('.cal-day:not(.disabled)').forEach(day => {
+    day.addEventListener('click', function() {
+      document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('today'));
+      this.classList.add('today');
+    });
+  });
+
+  // Nested navigation: Servicios and Perfil accessible from quick actions or space cards
+  document.querySelectorAll('.space-card').forEach(card => {
+    card.addEventListener('click', () => switchTab(2));
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

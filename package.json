@@ -1,0 +1,35 @@
+{
+  "name": "website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "postbuild": "node scripts/postbuild.mjs",
+    "start": "node .next/standalone/server.js",
+    "check-env": "node scripts/check-env.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.97",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.41.0",
+    "ai": "^7.0.163",
+    "lucide-react": "^0.575.0",
+    "next": "16.4.5",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "resend": "^6.37.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "5.9.3",
+    "vitest": "^5.1.0"
+  }
+}

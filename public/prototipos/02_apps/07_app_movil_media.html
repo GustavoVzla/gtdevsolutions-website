@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Móvil Media — Sabor Latino</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #E5E5E5;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .phone-frame {
+    width: 375px; height: 812px;
+    border: 8px solid #1a1a1a;
+    border-radius: 40px;
+    background: #fff;
+    position: relative; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 2px #333;
+  }
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 28px; background: #1a1a1a;
+    border-radius: 0 0 18px 18px; z-index: 100;
+  }
+  .status-bar {
+    height: 48px; padding: 14px 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; font-weight: 600; color: #1a1a1a;
+    background: #fff; position: relative; z-index: 50;
+  }
+  .status-bar .time { margin-left: 8px; }
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; margin-right: 8px; font-size: 11px; }
+  .screen-area {
+    position: absolute; top: 48px; bottom: 72px;
+    left: 0; right: 0; overflow: hidden;
+  }
+  .screen {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    overflow-y: auto; padding: 16px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    background: #f8f9fa;
+  }
+  .screen.active { opacity: 1; pointer-events: auto; }
+  .screen::-webkit-scrollbar { width: 0; }
+  h1 { font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
+  .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 16px; }
+  .card {
+    background: #fff; border-radius: 16px; padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 12px;
+  }
+  /* Carousel */
+  .carousel {
+    position: relative; border-radius: 16px; overflow: hidden;
+    height: 180px; margin-bottom: 16px;
+  }
+  .carousel-slide {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.5s;
+    display: flex; align-items: flex-end; padding: 16px;
+  }
+  .carousel-slide.active { opacity: 1; }
+  .carousel-slide:nth-child(1) { background: linear-gradient(rgba(220,38,38,0.4), rgba(249,115,22,0.4)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=200&fit=crop&q=80') center/cover no-repeat; }
+  .carousel-slide:nth-child(2) { background: linear-gradient(rgba(5,150,105,0.4), rgba(52,211,153,0.4)), url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=200&fit=crop&q=80') center/cover no-repeat; }
+  .carousel-slide:nth-child(3) { background: linear-gradient(rgba(124,58,237,0.4), rgba(167,139,250,0.4)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=200&fit=crop&q=80') center/cover no-repeat; }
+  .carousel-slide .slide-text { color: #fff; }
+  .carousel-slide .slide-text h3 { font-size: 18px; font-weight: 700; }
+  .carousel-slide .slide-text p { font-size: 13px; opacity: 0.9; }
+  .carousel-dots {
+    display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
+  }
+  .carousel-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #d1d5db; transition: background 0.3s;
+  }
+  .carousel-dots span.active { background: #2563EB; width: 20px; border-radius: 4px; }
+  /* Categories */
+  .categories { display: flex; gap: 10px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    white-space: nowrap; cursor: pointer; transition: all 0.2s;
+    background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb;
+  }
+  .cat-chip.active { background: #2563EB; color: #fff; border-color: #2563EB; }
+  .cat-chip:hover:not(.active) { border-color: #2563EB; color: #2563EB; }
+  /* Menu Item */
+  .menu-item {
+    display: flex; gap: 12px; background: #fff; border-radius: 14px;
+    padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 10px; cursor: pointer; transition: transform 0.2s;
+  }
+  .menu-item:hover { transform: translateY(-1px); }
+  .menu-item .item-img {
+    width: 72px; height: 72px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 32px;
+  }
+  .menu-item .item-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .menu-item .item-info h3 { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px; }
+  .menu-item .item-info p { font-size: 12px; color: #6b7280; line-height: 1.3; margin-bottom: 4px; }
+  .menu-item .item-info .price { font-size: 15px; font-weight: 700; color: #2563EB; }
+  /* Order */
+  .order-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .order-item:last-child { border: none; }
+  .order-item .oi-info { flex: 1; }
+  .order-item .oi-info h4 { font-size: 14px; font-weight: 500; }
+  .order-item .oi-info span { font-size: 12px; color: #6b7280; }
+  .qty-control {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .qty-btn {
+    width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid #e5e7eb;
+    background: #fff; font-size: 16px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .qty-btn:hover { border-color: #2563EB; color: #2563EB; }
+  .qty-num { font-size: 15px; font-weight: 600; min-width: 20px; text-align: center; }
+  .toggle-row {
+    display: flex; background: #f3f4f6; border-radius: 12px; padding: 4px; margin-bottom: 16px;
+  }
+  .toggle-opt {
+    flex: 1; text-align: center; padding: 10px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    color: #6b7280;
+  }
+  .toggle-opt.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+  .summary-row.total { font-weight: 700; font-size: 16px; border-top: 1.5px solid #e5e7eb; padding-top: 12px; margin-top: 4px; }
+  /* Reservas */
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb;
+    border-radius: 12px; font-size: 14px; font-family: 'Inter', sans-serif;
+    background: #fff; outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: #2563EB; }
+  .btn-primary {
+    width: 100%; padding: 14px; background: #2563EB; color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:active { transform: scale(0.98); }
+  /* Profile */
+  .profile-header {
+    text-align: center; padding: 20px 0 16px;
+  }
+  .avatar {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 10px;
+    background: linear-gradient(135deg, #f97316, #dc2626);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff; font-weight: 700;
+  }
+  .loyalty-card {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 16px; padding: 16px; color: #fff; margin-bottom: 16px;
+  }
+  .loyalty-card h3 { font-size: 14px; font-weight: 500; opacity: 0.9; margin-bottom: 4px; }
+  .loyalty-card .points { font-size: 32px; font-weight: 800; }
+  .loyalty-card .pts-label { font-size: 12px; opacity: 0.8; }
+  .history-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .history-item:last-child { border: none; }
+  .history-item .h-icon {
+    width: 40px; height: 40px; border-radius: 10px; background: #fef3c7;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .history-item .h-info { flex: 1; }
+  .history-item .h-info h4 { font-size: 13px; font-weight: 500; }
+  .history-item .h-info span { font-size: 11px; color: #6b7280; }
+  .history-item .h-price { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 72px;
+    background: #fff; border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-around;
+    padding-bottom: 8px; z-index: 50;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 10px; border-radius: 10px;
+    transition: background 0.2s;
+  }
+  .nav-item:hover { background: #f3f4f6; }
+  .nav-item .nav-icon { font-size: 22px; opacity: 0.4; transition: opacity 0.2s; }
+  .nav-item .nav-label { font-size: 10px; font-weight: 500; color: #9ca3af; transition: color 0.2s; }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .nav-item.active .nav-label { color: #2563EB; font-weight: 600; }
+  .proto-label {
+    margin-top: 16px; font-size: 12px; color: #9ca3af;
+    text-align: center; letter-spacing: 0.5px;
+  }
+  .toast {
+    position: absolute; bottom: 84px; left: 16px; right: 16px;
+    background: #065f46; color: #fff; padding: 14px 16px;
+    border-radius: 12px; font-size: 13px; font-weight: 500;
+    text-align: center; z-index: 80;
+    transform: translateY(20px); opacity: 0;
+    transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .popular-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .popular-card {
+    background: #fff; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .popular-card:hover { transform: translateY(-2px); }
+  .popular-card .pc-img {
+    height: 90px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+  }
+  .popular-card .pc-info { padding: 10px; }
+  .popular-card .pc-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .popular-card .pc-info .price { font-size: 14px; font-weight: 700; color: #2563EB; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span class="time">13:25</span>
+    <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>WiFi</span> <span>87%</span></div>
+  </div>
+
+  <div class="screen-area">
+    <!-- INICIO -->
+    <div class="screen active" id="screen-inicio">
+      <h1>Sabor Latino <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></h1>
+      <p class="subtitle">Auténtica cocina latinoamericana en Madrid</p>
+
+      <div class="carousel" id="carousel">
+        <div class="carousel-slide active">
+          <div class="slide-text">
+            <h3>Nuevos Tacos al Pastor</h3>
+            <p>Receta original de Ciudad de México</p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-text">
+            <h3>Happy Hour 17-19h</h3>
+            <p>2x1 en cócteles y entrantes</p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="slide-text">
+            <h3>Brunch Dominguero</h3>
+            <p>Menú especial desde €14.90</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-dots">
+        <span class="active"></span><span></span><span></span>
+      </div>
+
+      <h2>Lo más pedido</h2>
+      <div class="popular-grid">
+        <div class="popular-card">
+          <div class="pc-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="pc-info"><h4>Tacos al Pastor</h4><span class="price">€9.50</span></div>
+        </div>
+        <div class="popular-card">
+          <div class="pc-img" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+          <div class="pc-info"><h4>Guacamole Fresco</h4><span class="price">€7.90</span></div>
+        </div>
+        <div class="popular-card">
+          <div class="pc-img" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <div class="pc-info"><h4>Mojito Cubano</h4><span class="price">€8.50</span></div>
+        </div>
+        <div class="popular-card">
+          <div class="pc-img" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="pc-info"><h4>Ceviche Peruano</h4><span class="price">€12.90</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARTA -->
+    <div class="screen" id="screen-carta">
+      <h1>Nuestra Carta</h1>
+      <div class="categories" id="menuCats">
+        <div class="cat-chip active" onclick="filterMenu('all',this)">Todo</div>
+        <div class="cat-chip" onclick="filterMenu('entrantes',this)">Entrantes</div>
+        <div class="cat-chip" onclick="filterMenu('principales',this)">Principales</div>
+        <div class="cat-chip" onclick="filterMenu('postres',this)">Postres</div>
+        <div class="cat-chip" onclick="filterMenu('bebidas',this)">Bebidas</div>
+      </div>
+      <div id="menuList">
+        <div class="menu-item" data-cat="entrantes">
+          <div class="item-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+          <div class="item-info"><h3>Guacamole Fresco</h3><p>Aguacate, tomate, cebolla, cilantro, lima</p><span class="price">€7.90</span></div>
+        </div>
+        <div class="menu-item" data-cat="entrantes">
+          <div class="item-img" style="background:linear-gradient(135deg,#fee2e2,#fecaca)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="item-info"><h3>Empanadas Argentinas (3u)</h3><p>Carne, cebolla, huevo, aceitunas</p><span class="price">€8.50</span></div>
+        </div>
+        <div class="menu-item" data-cat="entrantes">
+          <div class="item-img" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="item-info"><h3>Ceviche Peruano</h3><p>Lubina, leche de tigre, cebolla morada, maíz</p><span class="price">€12.90</span></div>
+        </div>
+        <div class="menu-item" data-cat="principales">
+          <div class="item-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="item-info"><h3>Tacos al Pastor (3u)</h3><p>Cerdo marinado, piña, cebolla, cilantro</p><span class="price">€9.50</span></div>
+        </div>
+        <div class="menu-item" data-cat="principales">
+          <div class="item-img" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <div class="item-info"><h3>Asado Argentino</h3><p>Bife de chorizo 300g, chimichurri, patatas</p><span class="price">€18.90</span></div>
+        </div>
+        <div class="menu-item" data-cat="principales">
+          <div class="item-img" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="item-info"><h3>Burrito Supreme</h3><p>Pollo, arroz, frijoles, pico de gallo, crema</p><span class="price">€11.50</span></div>
+        </div>
+        <div class="menu-item" data-cat="postres">
+          <div class="item-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="item-info"><h3>Flan de Dulce de Leche</h3><p>Flan casero con caramelo argentino</p><span class="price">€6.50</span></div>
+        </div>
+        <div class="menu-item" data-cat="postres">
+          <div class="item-img" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="item-info"><h3>Churros con Chocolate</h3><p>Churros artesanos con chocolate caliente</p><span class="price">€5.90</span></div>
+        </div>
+        <div class="menu-item" data-cat="bebidas">
+          <div class="item-img" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <div class="item-info"><h3>Mojito Cubano</h3><p>Ron, menta, lima, azúcar de caña, soda</p><span class="price">€8.50</span></div>
+        </div>
+        <div class="menu-item" data-cat="bebidas">
+          <div class="item-img" style="background:linear-gradient(135deg,#fff7ed,#fed7aa)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9a3412" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <div class="item-info"><h3>Agua de Jamaica</h3><p>Infusión de flor de Jamaica, limón, miel</p><span class="price">€4.50</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEDIDO -->
+    <div class="screen" id="screen-pedido">
+      <h1>Tu Pedido</h1>
+      <div class="toggle-row">
+        <div class="toggle-opt active" onclick="toggleDelivery(this)">Recoger</div>
+        <div class="toggle-opt" onclick="toggleDelivery(this)">A domicilio</div>
+      </div>
+      <div class="card">
+        <div class="order-item">
+          <div class="oi-info"><h4>Tacos al Pastor (3u)</h4><span>€9.50</span></div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(0,-1)">-</button>
+            <span class="qty-num" id="qty-0">2</span>
+            <button class="qty-btn" onclick="changeQty(0,1)">+</button>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="oi-info"><h4>Guacamole Fresco</h4><span>€7.90</span></div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(1,-1)">-</button>
+            <span class="qty-num" id="qty-1">1</span>
+            <button class="qty-btn" onclick="changeQty(1,1)">+</button>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="oi-info"><h4>Mojito Cubano</h4><span>€8.50</span></div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(2,-1)">-</button>
+            <span class="qty-num" id="qty-2">2</span>
+            <button class="qty-btn" onclick="changeQty(2,1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="summary-row"><span>Subtotal</span><span id="subtotal">€43.90</span></div>
+        <div class="summary-row"><span>Envío</span><span>Gratis</span></div>
+        <div class="summary-row total"><span>Total</span><span id="total">€43.90</span></div>
+      </div>
+      <button class="btn-primary" onclick="showToast('¡Pedido confirmado! Listo en 25 min.')">Confirmar Pedido</button>
+    </div>
+
+    <!-- RESERVAS -->
+    <div class="screen" id="screen-reservas">
+      <h1>Reservar Mesa</h1>
+      <p class="subtitle">Asegura tu sitio para una experiencia única</p>
+      <div class="card" style="background:linear-gradient(135deg,#dc2626,#f97316);color:#fff;margin-bottom:16px;">
+        <p style="font-size:13px;opacity:0.9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> C/ Fuencarral 87, Madrid</p>
+        <p style="font-size:13px;opacity:0.9;margin-top:4px">Lun-Jue 13-23h · Vie-Sáb 13-01h · Dom 13-17h</p>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" />
+        </div>
+        <div class="form-group">
+          <label>Hora</label>
+          <select>
+            <option>Selecciona hora</option>
+            <option>13:00</option><option>13:30</option><option>14:00</option><option>14:30</option>
+            <option>20:00</option><option>20:30</option><option>21:00</option><option>21:30</option><option>22:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Comensales</label>
+          <select>
+            <option>2 personas</option><option>3 personas</option><option>4 personas</option>
+            <option>5 personas</option><option>6 personas</option><option>7-8 personas</option>
+            <option>Grupo (+8)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preferencia</label>
+          <select>
+            <option>Sin preferencia</option><option>Terraza</option><option>Interior</option><option>Barra</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ocasión especial (opcional)</label>
+          <input type="text" placeholder="Cumpleaños, aniversario..." />
+        </div>
+        <button class="btn-primary" onclick="showToast('¡Reserva confirmada! Te esperamos.')">Reservar</button>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="screen" id="screen-perfil">
+      <div class="profile-header">
+        <div class="avatar">CG</div>
+        <h2 style="margin-bottom:2px">Carlos García</h2>
+        <p class="subtitle" style="margin-bottom:0">Miembro desde Ene 2025</p>
+      </div>
+      <div class="loyalty-card">
+        <h3>Puntos Sabor</h3>
+        <div class="points">1.280 <span class="pts-label">pts</span></div>
+        <p style="font-size:12px;opacity:0.85;margin-top:6px">Te faltan 220 pts para un postre gratis <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></p>
+      </div>
+      <div class="card">
+        <h2>Últimos pedidos</h2>
+        <div class="history-item">
+          <div class="h-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="h-info"><h4>Tacos + Guacamole + Mojitos</h4><span>Hoy, 13:25</span></div>
+          <span class="h-price">€43.90</span>
+        </div>
+        <div class="history-item">
+          <div class="h-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <div class="h-info"><h4>Asado + Ensalada + Vino</h4><span>15 Feb, 21:00</span></div>
+          <span class="h-price">€38.50</span>
+        </div>
+        <div class="history-item">
+          <div class="h-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
+          <div class="h-info"><h4>2x Burritos + Churros</h4><span>10 Feb, 14:30</span></div>
+          <span class="h-price">€28.90</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Favoritos</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="background:#fef3c7;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg> Tacos al Pastor</span>
+          <span style="background:#d1fae5;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Mojito Cubano</span>
+          <span style="background:#fce7f3;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Guacamole</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab(0)"><span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="nav-label">Inicio</span></div>
+    <div class="nav-item" onclick="switchTab(1)"><span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span><span class="nav-label">Carta</span></div>
+    <div class="nav-item" onclick="switchTab(2)"><span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span><span class="nav-label">Pedido</span></div>
+    <div class="nav-item" onclick="switchTab(3)"><span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span><span class="nav-label">Reservas</span></div>
+    <div class="nav-item" onclick="switchTab(4)"><span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Perfil</span></div>
+  </div>
+</div>
+
+<div class="proto-label">Prototipo GT Dev Solutions</div>
+
+<script>
+  const screens = ['inicio','carta','pedido','reservas','perfil'];
+  const navItems = document.querySelectorAll('.nav-item');
+  function switchTab(i) {
+    screens.forEach((s,idx) => {
+      document.getElementById('screen-'+s).classList.toggle('active', idx===i);
+      navItems[idx].classList.toggle('active', idx===i);
+    });
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  // Carousel
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.carousel-dots span');
+  setInterval(() => {
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = (currentSlide + 1) % slides.length;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }, 3500);
+  // Menu filter
+  function filterMenu(cat, el) {
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.style.display = (cat === 'all' || item.dataset.cat === cat) ? 'flex' : 'none';
+    });
+  }
+  // Qty
+  const prices = [9.50, 7.90, 8.50];
+  let qtys = [2, 1, 2];
+  function changeQty(idx, delta) {
+    qtys[idx] = Math.max(0, qtys[idx] + delta);
+    document.getElementById('qty-'+idx).textContent = qtys[idx];
+    updateTotal();
+  }
+  function updateTotal() {
+    const sub = qtys.reduce((s,q,i) => s + q * prices[i], 0);
+    document.getElementById('subtotal').textContent = '€' + sub.toFixed(2);
+    document.getElementById('total').textContent = '€' + sub.toFixed(2);
+  }
+  // Toggle
+  function toggleDelivery(el) {
+    document.querySelectorAll('.toggle-opt').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>
